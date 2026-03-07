@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Slide Creator</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <header class="app-header">
+        <div class="header-left">
+            <h1 class="app-title">Slide Creator</h1>
+            <nav class="breadcrumb" id="breadcrumb"></nav>
+        </div>
+        <div class="header-actions">
+            <button class="btn btn-sm" id="saveBtn" title="Save project">Save</button>
+            <button class="btn btn-sm" id="loadBtn" title="Load project">Load</button>
+            <input type="file" id="loadFileInput" accept=".json" hidden>
+        </div>
+    </header>
+
+    <main id="main">
+        <!-- Screen 1: Setup -->
+        <section id="screen-setup" class="screen active">
+            <div class="screen-inner">
+                <h2 class="screen-heading">Choose a Design System</h2>
+                <p class="screen-sub">This sets the look for your entire deck. You can change it later.</p>
+                <div class="design-picker" id="designPicker"></div>
+
+                <div class="meta-fields" id="metaFields" style="display:none;">
+                    <h3>Deck Info <span class="optional-tag">optional</span></h3>
+                    <div class="field-row">
+                        <label>Deck Title<input type="text" id="metaTitle" placeholder="My Presentation"></label>
+                        <label>Author<input type="text" id="metaAuthor" placeholder="Your Name"></label>
+                    </div>
+                    <div class="nav-buttons">
+                        <span></span>
+                        <button class="btn btn-primary" id="setupNext">Next: Define Sections</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Screen 2: Sections -->
+        <section id="screen-sections" class="screen">
+            <div class="screen-inner">
+                <h2 class="screen-heading">Define Your Sections</h2>
+                <p class="screen-sub">Sections organize your deck and get automatic divider slides. Drag to reorder.</p>
+                <div id="sectionsList" class="sections-list"></div>
+                <button class="btn btn-outline" id="addSectionBtn">+ Add Section</button>
+                <div class="nav-buttons">
+                    <button class="btn" id="sectionsBack">Back</button>
+                    <button class="btn btn-primary" id="sectionsNext">Next: Add Slides</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Screen 3: Gallery -->
+        <section id="screen-gallery" class="screen">
+            <div class="screen-inner screen-inner-wide">
+                <div class="gallery-header">
+                    <div>
+                        <h2 class="screen-heading">Choose a Slide Type</h2>
+                        <p class="screen-sub">Click a type to add it to your deck.</p>
+                    </div>
+                    <button class="btn" id="galleryToFilmstrip">View Deck Filmstrip</button>
+                </div>
+                <div id="galleryGrid" class="gallery-grid"></div>
+                <div class="nav-buttons">
+                    <button class="btn" id="galleryBack">Back: Sections</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Screen 4: Editor -->
+        <section id="screen-editor" class="screen">
+            <div class="editor-layout">
+                <div class="editor-form-panel" id="editorFormPanel">
+                    <div class="editor-form-header" id="editorFormHeader"></div>
+                    <div class="editor-form-body" id="editorForm"></div>
+                    <div class="editor-form-footer">
+                        <button class="btn" id="editorCancel">Cancel</button>
+                        <button class="btn btn-primary" id="editorDone">Add to Deck</button>
+                    </div>
+                </div>
+                <div class="editor-preview-panel">
+                    <div class="preview-container" id="previewContainer"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Screen 5: Filmstrip -->
+        <section id="screen-filmstrip" class="screen">
+            <div class="screen-inner screen-inner-wide">
+                <div class="filmstrip-header">
+                    <div>
+                        <h2 class="screen-heading">Your Deck</h2>
+                        <p class="screen-sub" id="filmstripCount"></p>
+                    </div>
+                    <div class="filmstrip-actions">
+                        <button class="btn" id="addSlideBtn">+ Add Slide</button>
+                        <button class="btn btn-primary" id="buildBtn">Build &amp; Download</button>
+                    </div>
+                </div>
+                <div class="filmstrip-scroll" id="filmstripScroll">
+                    <div class="filmstrip-track" id="filmstripTrack"></div>
+                </div>
+                <div class="nav-buttons">
+                    <button class="btn" id="filmstripBack">Back: Gallery</button>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <div class="toast" id="toast"></div>
+
+    <script src="/static/schemas.js"></script>
+    <script src="/static/previews.js"></script>
+    <script src="/static/app.js"></script>
+</body>
+</html>
