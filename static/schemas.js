@@ -6,6 +6,7 @@ const SLIDE_CATEGORIES = [
     { id: "content", label: "Key Points" },
     { id: "analysis", label: "Analysis & Evidence" },
     { id: "insights", label: "Frameworks & Insights" },
+    { id: "personas", label: "Personas" },
     { id: "discussion", label: "Conclusions" },
 ];
 
@@ -32,6 +33,20 @@ const SECTION_COLOR_OPTIONS = {
         { value: "slate", label: "Slate", hex: "#5A6A7A" },
         { value: "plum", label: "Plum", hex: "#8E4585" },
     ],
+    bold: [
+        { value: "green", label: "Green", hex: "#368727" },
+        { value: "blue", label: "Blue", hex: "#3880F3" },
+        { value: "purple", label: "Purple", hex: "#5B2C8F" },
+        { value: "cobalt", label: "Cobalt", hex: "#04547C" },
+        { value: "gold", label: "Gold", hex: "#D4A843" },
+    ],
+    noir: [
+        { value: "green", label: "Green", hex: "#368727" },
+        { value: "blue", label: "Blue", hex: "#3880F3" },
+        { value: "purple", label: "Purple", hex: "#5B2C8F" },
+        { value: "cobalt", label: "Cobalt", hex: "#04547C" },
+        { value: "gold", label: "Gold", hex: "#D4A843" },
+    ],
 };
 
 const SLIDE_SCHEMAS = {
@@ -44,6 +59,7 @@ const SLIDE_SCHEMAS = {
             { key: "subtitle", label: "Subtitle", type: "text", default: "" },
             { key: "author", label: "Author", type: "text", default: "" },
             { key: "date", label: "Date", type: "text", default: "" },
+            { key: "imagePath", label: "Image (optional)", type: "text", default: "" },
         ]
     },
     closer: {
@@ -154,6 +170,23 @@ const SLIDE_SCHEMAS = {
             },
         ]
     },
+    process_flow_reveal: {
+        label: "Process Flow (Reveal)",
+        description: "Builds step-by-step across multiple slides.",
+        category: "analysis",
+        generatesMultipleSlides: "N",
+        fields: [
+            { key: "title", label: "Slide Title", type: "text", default: "Process" },
+            {
+                key: "steps", label: "Steps", type: "repeating",
+                minItems: 2, maxItems: 5, startItems: 3,
+                subfields: [
+                    { key: "title", label: "Step Title", type: "text", default: "" },
+                    { key: "detail", label: "Detail", type: "textarea", default: "" },
+                ]
+            },
+        ]
+    },
     matrix: {
         label: "2\u00d72 Matrix",
         description: "Four-quadrant framework with axis labels.",
@@ -213,6 +246,11 @@ const SLIDE_SCHEMAS = {
         fields: [
             { key: "title", label: "Slide Title", type: "text", default: "Key Finding" },
             {
+                key: "labels", label: "Column Labels", type: "repeating-simple",
+                minItems: 3, maxItems: 3, startItems: 3,
+                itemLabel: "Label", default: ""
+            },
+            {
                 key: "what", label: "What", type: "group",
                 subfields: [
                     { key: "headline", label: "Headline", type: "text", default: "" },
@@ -244,10 +282,16 @@ const SLIDE_SCHEMAS = {
         fields: [
             { key: "title", label: "Slide Title", type: "text", default: "Key Finding" },
             {
+                key: "labels", label: "Column Labels", type: "repeating-simple",
+                minItems: 3, maxItems: 3, startItems: 3,
+                itemLabel: "Label", default: ""
+            },
+            {
                 key: "what", label: "What", type: "group",
                 subfields: [
                     { key: "headline", label: "Headline", type: "text", default: "" },
                     { key: "detail", label: "Detail", type: "textarea", default: "" },
+                    { key: "summary", label: "Short Summary", type: "text", default: "" },
                 ]
             },
             {
@@ -255,6 +299,7 @@ const SLIDE_SCHEMAS = {
                 subfields: [
                     { key: "headline", label: "Headline", type: "text", default: "" },
                     { key: "detail", label: "Detail", type: "textarea", default: "" },
+                    { key: "summary", label: "Short Summary", type: "text", default: "" },
                 ]
             },
             {
@@ -262,6 +307,7 @@ const SLIDE_SCHEMAS = {
                 subfields: [
                     { key: "headline", label: "Headline", type: "text", default: "" },
                     { key: "detail", label: "Detail", type: "textarea", default: "" },
+                    { key: "summary", label: "Short Summary", type: "text", default: "" },
                 ]
             },
         ]
@@ -290,7 +336,7 @@ const SLIDE_SCHEMAS = {
             { key: "title", label: "Slide Title", type: "text", default: "Complete Findings" },
             {
                 key: "items", label: "Items", type: "repeating",
-                minItems: 1, maxItems: 8, startItems: 4,
+                minItems: 1, maxItems: 5, startItems: 4,
                 subfields: [
                     { key: "finding", label: "Finding", type: "text", default: "" },
                     { key: "recommendation", label: "Recommendation", type: "text", default: "" },
@@ -325,6 +371,346 @@ const SLIDE_SCHEMAS = {
                     { key: "headline", label: "Headline", type: "text", default: "" },
                     { key: "detail", label: "Detail", type: "textarea", default: "" },
                     { key: "summary", label: "Short Summary (for running list)", type: "text", default: "" },
+                ]
+            },
+        ]
+    },
+    timeline: {
+        label: "Timeline",
+        description: "Horizontal timeline with milestones and status indicators.",
+        category: "structure",
+        fields: [
+            { key: "title", label: "Slide Title", type: "text", default: "Timeline" },
+            {
+                key: "milestones", label: "Milestones", type: "repeating",
+                minItems: 2, maxItems: 6, startItems: 3,
+                subfields: [
+                    { key: "date", label: "Date", type: "text", default: "" },
+                    { key: "title", label: "Title", type: "text", default: "" },
+                    { key: "detail", label: "Detail", type: "text", default: "" },
+                    { key: "status", label: "Status", type: "select", options: ["upcoming", "current", "complete"], default: "upcoming" },
+                ]
+            },
+        ]
+    },
+    data_table: {
+        label: "Data Table",
+        description: "Tabular data with headers and optional column highlighting.",
+        category: "analysis",
+        fields: [
+            { key: "title", label: "Slide Title", type: "text", default: "Data" },
+            {
+                key: "headers", label: "Column Headers", type: "repeating-simple",
+                minItems: 2, maxItems: 6, startItems: 3,
+                itemLabel: "Header", default: ""
+            },
+            {
+                key: "rows", label: "Rows", type: "repeating",
+                minItems: 1, maxItems: 10, startItems: 3,
+                subfields: [
+                    { key: "0", label: "Col 1", type: "text", default: "" },
+                    { key: "1", label: "Col 2", type: "text", default: "" },
+                    { key: "2", label: "Col 3", type: "text", default: "" },
+                ]
+            },
+            { key: "highlightCol", label: "Highlight Column (0-based index)", type: "text", default: "" },
+            { key: "note", label: "Footnote", type: "text", default: "" },
+        ]
+    },
+    multi_stat: {
+        label: "Multi-Stat",
+        description: "2-4 key metrics side by side with values and labels.",
+        category: "content",
+        fields: [
+            { key: "title", label: "Slide Title", type: "text", default: "Key Metrics" },
+            {
+                key: "stats", label: "Statistics", type: "repeating",
+                minItems: 2, maxItems: 4, startItems: 3,
+                subfields: [
+                    { key: "value", label: "Value", type: "text", default: "" },
+                    { key: "label", label: "Label", type: "text", default: "" },
+                    { key: "detail", label: "Detail", type: "text", default: "" },
+                ]
+            },
+            { key: "source", label: "Source", type: "text", default: "" },
+        ]
+    },
+    persona: {
+        label: "Persona",
+        description: "User persona with name, archetype, traits, and strategy.",
+        category: "personas",
+        fields: [
+            { key: "title", label: "Slide Title", type: "text", default: "Persona" },
+            { key: "name", label: "Name", type: "text", default: "" },
+            { key: "archetype", label: "Archetype", type: "text", default: "" },
+            {
+                key: "traits", label: "Traits", type: "repeating-simple",
+                minItems: 1, maxItems: 5, startItems: 3,
+                itemLabel: "Trait", default: ""
+            },
+            { key: "strategy", label: "Strategy", type: "textarea", default: "" },
+            { key: "detail", label: "Additional Detail", type: "textarea", default: "" },
+        ]
+    },
+    risk_tradeoff: {
+        label: "Risk / Reward",
+        description: "Side-by-side risks and rewards with severity levels.",
+        category: "analysis",
+        fields: [
+            { key: "title", label: "Slide Title", type: "text", default: "Risk & Reward" },
+            {
+                key: "risks", label: "Risks", type: "repeating",
+                minItems: 1, maxItems: 5, startItems: 2,
+                subfields: [
+                    { key: "label", label: "Risk", type: "text", default: "" },
+                    { key: "detail", label: "Detail", type: "text", default: "" },
+                    { key: "severity", label: "Severity", type: "select", options: ["low", "medium", "high"], default: "medium" },
+                ]
+            },
+            {
+                key: "rewards", label: "Rewards", type: "repeating",
+                minItems: 1, maxItems: 5, startItems: 2,
+                subfields: [
+                    { key: "label", label: "Reward", type: "text", default: "" },
+                    { key: "detail", label: "Detail", type: "text", default: "" },
+                ]
+            },
+        ]
+    },
+    appendix: {
+        label: "Appendix",
+        description: "Reference material organized in labeled sections.",
+        category: "discussion",
+        fields: [
+            { key: "title", label: "Slide Title", type: "text", default: "Appendix" },
+            {
+                key: "sections", label: "Sections", type: "repeating",
+                minItems: 1, maxItems: 4, startItems: 2,
+                subfields: [
+                    { key: "label", label: "Section Label", type: "text", default: "" },
+                    { key: "content", label: "Content", type: "textarea", default: "" },
+                ]
+            },
+        ]
+    },
+    before_after: {
+        label: "Before / After",
+        description: "Transformation view with before state, intervention, and after state.",
+        category: "content",
+        fields: [
+            { key: "title", label: "Slide Title", type: "text", default: "Transformation" },
+            {
+                key: "before", label: "Before", type: "group",
+                subfields: [
+                    { key: "label", label: "Label", type: "text", default: "Before" },
+                    { key: "detail", label: "Detail", type: "textarea", default: "" },
+                ]
+            },
+            { key: "intervention", label: "Intervention / Change", type: "textarea", default: "" },
+            {
+                key: "after", label: "After", type: "group",
+                subfields: [
+                    { key: "label", label: "Label", type: "text", default: "After" },
+                    { key: "detail", label: "Detail", type: "textarea", default: "" },
+                ]
+            },
+        ]
+    },
+    summary: {
+        label: "Summary",
+        description: "Column-based summary with headings and bullet points.",
+        category: "discussion",
+        fields: [
+            { key: "title", label: "Slide Title", type: "text", default: "Summary" },
+            {
+                key: "sections", label: "Columns", type: "repeating",
+                minItems: 2, maxItems: 4, startItems: 3,
+                subfields: [
+                    { key: "heading", label: "Heading", type: "text", default: "" },
+                    {
+                        key: "points", label: "Points", type: "repeating-simple",
+                        minItems: 1, maxItems: 5, startItems: 2,
+                        itemLabel: "Point", default: ""
+                    },
+                ]
+            },
+        ]
+    },
+    quote_full: {
+        label: "Full-Bleed Quote",
+        description: "Dramatic full-slide quote on colored background.",
+        category: "content",
+        fields: [
+            { key: "quote", label: "Quote Text", type: "textarea", default: "" },
+            { key: "attribution", label: "Attribution", type: "text", default: "" },
+            { key: "context", label: "Context", type: "text", default: "" },
+        ]
+    },
+    stat_hero: {
+        label: "Stat Hero",
+        description: "One hero stat with supporting metrics below.",
+        category: "content",
+        fields: [
+            { key: "title", label: "Slide Title", type: "text", default: "Key Metric" },
+            {
+                key: "hero", label: "Hero Stat", type: "group",
+                subfields: [
+                    { key: "value", label: "Value", type: "text", default: "" },
+                    { key: "label", label: "Label", type: "text", default: "" },
+                ]
+            },
+            {
+                key: "supporting", label: "Supporting Stats", type: "repeating",
+                minItems: 0, maxItems: 4, startItems: 2,
+                subfields: [
+                    { key: "value", label: "Value", type: "text", default: "" },
+                    { key: "label", label: "Label", type: "text", default: "" },
+                ]
+            },
+            { key: "source", label: "Source", type: "text", default: "" },
+        ]
+    },
+    in_brief_featured: {
+        label: "In Brief (Featured)",
+        description: "One featured callout with supporting bullet points.",
+        category: "content",
+        fields: [
+            { key: "title", label: "Slide Title", type: "text", default: "In Brief" },
+            { key: "featured", label: "Featured Point", type: "textarea", default: "" },
+            {
+                key: "supporting", label: "Supporting Points", type: "repeating-simple",
+                minItems: 1, maxItems: 4, startItems: 2,
+                itemLabel: "Point", default: ""
+            },
+        ]
+    },
+    persona_duo: {
+        label: "Persona Duo",
+        description: "Side-by-side comparison of two personas.",
+        category: "personas",
+        fields: [
+            { key: "title", label: "Slide Title", type: "text", default: "Archetype Comparison" },
+            {
+                key: "personas", label: "Personas", type: "fixed-list", count: 2,
+                subfields: [
+                    { key: "name", label: "Name", type: "text", default: "" },
+                    { key: "archetype", label: "Archetype", type: "text", default: "" },
+                    {
+                        key: "traits", label: "Traits", type: "repeating-simple",
+                        minItems: 1, maxItems: 4, startItems: 2,
+                        itemLabel: "Trait", default: ""
+                    },
+                    { key: "strategy", label: "Strategy", type: "textarea", default: "" },
+                ],
+                itemLabels: ["Persona A", "Persona B"]
+            },
+        ]
+    },
+    process_flow_vertical: {
+        label: "Process Flow (Vertical)",
+        description: "Vertical step-by-step flow with arrows between steps.",
+        category: "analysis",
+        fields: [
+            { key: "title", label: "Slide Title", type: "text", default: "Process" },
+            {
+                key: "steps", label: "Steps", type: "repeating",
+                minItems: 2, maxItems: 3, startItems: 3,
+                subfields: [
+                    { key: "title", label: "Step Title", type: "text", default: "" },
+                    { key: "detail", label: "Detail", type: "textarea", default: "" },
+                ]
+            },
+        ]
+    },
+    text_cards: {
+        label: "Text Cards",
+        description: "Grid of cards with titles and details.",
+        category: "content",
+        fields: [
+            { key: "title", label: "Slide Title", type: "text", default: "Key Points" },
+            {
+                key: "items", label: "Cards", type: "repeating",
+                minItems: 2, maxItems: 6, startItems: 4,
+                subfields: [
+                    { key: "title", label: "Card Title", type: "text", default: "" },
+                    { key: "detail", label: "Detail", type: "textarea", default: "" },
+                ]
+            },
+        ]
+    },
+    text_columns: {
+        label: "Text Columns",
+        description: "2-3 columns of text with optional headings.",
+        category: "content",
+        fields: [
+            { key: "title", label: "Slide Title", type: "text", default: "Overview" },
+            {
+                key: "columns", label: "Columns", type: "repeating",
+                minItems: 2, maxItems: 3, startItems: 2,
+                subfields: [
+                    { key: "heading", label: "Heading", type: "text", default: "" },
+                    { key: "body", label: "Body", type: "textarea", default: "" },
+                ]
+            },
+        ]
+    },
+    text_narrative: {
+        label: "Text Narrative",
+        description: "Featured lead paragraph with flowing body text.",
+        category: "content",
+        fields: [
+            { key: "title", label: "Slide Title", type: "text", default: "Overview" },
+            { key: "lede", label: "Lead Paragraph", type: "textarea", default: "" },
+            { key: "body", label: "Body Text", type: "textarea", default: "" },
+        ]
+    },
+    text_nested: {
+        label: "Text Nested",
+        description: "Hierarchical content with colored label blocks and child items.",
+        category: "content",
+        fields: [
+            { key: "title", label: "Slide Title", type: "text", default: "Detail" },
+            {
+                key: "items", label: "Sections", type: "repeating",
+                minItems: 2, maxItems: 4, startItems: 3,
+                subfields: [
+                    { key: "text", label: "Section Label", type: "text", default: "" },
+                    {
+                        key: "children", label: "Children", type: "repeating-simple",
+                        minItems: 1, maxItems: 4, startItems: 2,
+                        itemLabel: "Item", default: ""
+                    },
+                ]
+            },
+        ]
+    },
+    text_split: {
+        label: "Text Split",
+        description: "Headline on left, supporting points on right.",
+        category: "content",
+        fields: [
+            { key: "title", label: "Slide Title", type: "text", default: "Key Point" },
+            { key: "headline", label: "Headline", type: "textarea", default: "" },
+            { key: "detail", label: "Detail", type: "textarea", default: "" },
+            {
+                key: "points", label: "Supporting Points", type: "repeating-simple",
+                minItems: 1, maxItems: 6, startItems: 3,
+                itemLabel: "Point", default: ""
+            },
+        ]
+    },
+    text_annotated: {
+        label: "Text Annotated",
+        description: "Labeled rows with colored category tags and descriptions.",
+        category: "analysis",
+        fields: [
+            { key: "title", label: "Slide Title", type: "text", default: "Analysis" },
+            {
+                key: "items", label: "Items", type: "repeating",
+                minItems: 2, maxItems: 5, startItems: 3,
+                subfields: [
+                    { key: "label", label: "Label/Tag", type: "text", default: "" },
+                    { key: "text", label: "Description", type: "textarea", default: "" },
                 ]
             },
         ]
@@ -364,6 +750,12 @@ function buildDefaultData(type) {
         } else {
             data[field.key] = field.default !== undefined ? field.default : "";
         }
+    }
+    if (type === 'wsn_dense' && data.labels && data.labels.every(l => l === '')) {
+        data.labels = ['What', 'So What', 'Now What'];
+    }
+    if (type === 'wsn_reveal' && data.labels && data.labels.every(l => l === '')) {
+        data.labels = ['What', 'So What', 'Now What'];
     }
     return data;
 }

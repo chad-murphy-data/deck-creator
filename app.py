@@ -7,6 +7,9 @@ from werkzeug.utils import secure_filename
 
 import template_slick
 import template_colorful
+import template_bold
+import template_editorial
+import template_noir
 
 app = Flask(__name__)
 
@@ -18,6 +21,9 @@ os.makedirs(PROJECTS_DIR, exist_ok=True)
 TEMPLATES = {
     "slick": template_slick,
     "colorful": template_colorful,
+    "bold": template_bold,
+    "editorial": template_editorial,
+    "noir": template_noir,
 }
 
 
