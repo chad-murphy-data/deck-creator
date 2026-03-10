@@ -54,13 +54,11 @@ function _placeholder(text) {
 
 /* ---- Bold helpers ---- */
 function _boldBar(accent) {
-    return `<div style="position:absolute;left:0;top:0;width:30px;height:100%;background:${accent}"></div>
-            <div style="position:absolute;right:0;top:0;width:12px;height:100%;background:${accent};opacity:0.3"></div>`;
+    return `<div style="position:absolute;left:0;top:0;width:30px;height:100%;background:${accent}"></div>`;
 }
 
 function _boldTitle(title, accent) {
-    return `<div data-field="title" style="position:absolute;left:65px;top:22px;width:880px;font-size:21px;font-weight:800;color:#1A1A1A;font-family:'Trebuchet MS',sans-serif">${title}</div>
-        <div style="position:absolute;left:65px;top:57px;width:180px;height:5px;background:${accent}"></div>`;
+    return `<div data-field="title" style="position:absolute;left:65px;top:22px;width:880px;font-size:21px;font-weight:800;color:#1A1A1A;font-family:'Trebuchet MS',sans-serif">${title}</div>`;
 }
 
 /* ---- Noir helpers ---- */
@@ -144,15 +142,14 @@ const PREVIEW_RENDERERS = {
         }
 
         if (theme === 'bold') {
-            return `<div class="preview-slide theme-bold" style="background:#2A2A2A">
+            return `<div class="preview-slide theme-bold" style="background:#F2F0EC">
                 <div style="position:absolute;left:0;top:0;width:30px;height:100%;background:${accent}"></div>
-                <div style="position:absolute;right:0;top:0;width:12px;height:100%;background:${accent};opacity:0.3"></div>
-                <div data-field="title" style="position:absolute;left:90px;top:100px;width:860px;font-size:36px;font-weight:800;color:#FFFFFF;font-family:'Trebuchet MS',sans-serif">${t}</div>
-                <div style="position:absolute;left:90px;top:265px;width:250px;height:5px;background:${accent}"></div>
-                ${sub ? `<div data-field="subtitle" style="position:absolute;left:90px;top:285px;font-size:15px;color:#ccc">${sub}</div>` : ''}
-                ${auth ? `<div data-field="author" style="position:absolute;left:90px;top:410px;font-size:12px;color:#aaa;font-weight:600">${auth}</div>` : ''}
-                ${dt ? `<div data-field="date" style="position:absolute;left:90px;top:445px;font-size:11px;color:#aaa">${dt}</div>` : ''}
-                ${data.imagePath ? `<img src="${esc(data.imagePath)}" style="position:absolute;right:20px;top:15px;width:200px;height:250px;object-fit:contain">` : `<div style="position:absolute;right:30px;top:20px;width:200px;height:260px;border:2px dashed #ccc;border-radius:8px;display:flex;align-items:center;justify-content:center;color:#bbb;font-size:11px">Image</div>`}
+                <div data-field="title" style="position:absolute;left:65px;top:100px;width:880px;font-size:36px;font-weight:800;color:#1A1A1A;font-family:'Trebuchet MS',sans-serif">${t}</div>
+                <div style="position:absolute;left:65px;top:265px;width:250px;height:3px;background:${accent}"></div>
+                ${sub ? `<div data-field="subtitle" style="position:absolute;left:65px;top:280px;font-size:15px;color:#585858">${sub}</div>` : ''}
+                ${auth ? `<div data-field="author" style="position:absolute;left:65px;top:400px;font-size:12px;color:#8A8A8A;font-weight:600">${auth}</div>` : ''}
+                ${dt ? `<div data-field="date" style="position:absolute;left:65px;top:432px;font-size:11px;color:#8A8A8A">${dt}</div>` : ''}
+                ${data.imagePath ? `<img src="${esc(data.imagePath)}" style="position:absolute;right:20px;top:15px;width:200px;height:250px;object-fit:contain">` : `<div style="position:absolute;right:30px;top:20px;width:200px;height:260px;border:2px dashed #F2F0EC;border-radius:8px;display:flex;align-items:center;justify-content:center;color:#bbb;font-size:11px">Image</div>`}
             </div>`;
         }
 
@@ -548,11 +545,11 @@ const PREVIEW_RENDERERS = {
             return `${_slideOpen('bold')}
                 ${_boldBar(accent)}
                 ${_boldTitle(t, accent)}
-                <div style="position:absolute;left:85px;top:80px;font-size:72px;color:${accent};font-family:Georgia,serif;line-height:1">\u201C</div>
-                <div data-field="quote" style="position:absolute;left:105px;top:140px;width:820px;font-size:18px;font-style:italic;color:#1A1A1A;line-height:1.6">${q || _placeholder('Quote text...')}</div>
-                <div style="position:absolute;left:105px;top:380px;width:200px;height:4px;background:${accent}"></div>
-                ${attr ? `<div data-field="attribution" style="position:absolute;left:105px;top:398px;font-size:13px;font-weight:700;color:#1A1A1A">\u2014 ${attr}</div>` : ''}
-                ${ctx ? `<div data-field="context" style="position:absolute;left:105px;top:418px;font-size:11px;color:#555">${ctx}</div>` : ''}
+                <div style="position:absolute;left:65px;top:80px;width:4px;height:180px;background:${accent};border-radius:2px"></div>
+                <div data-field="quote" style="position:absolute;left:85px;top:90px;width:840px;font-size:18px;font-style:italic;color:#1A1A1A;line-height:1.6">${q || _placeholder('Quote text...')}</div>
+                <div style="position:absolute;left:85px;top:360px;width:150px;height:4px;background:${accent}"></div>
+                ${attr ? `<div data-field="attribution" style="position:absolute;left:85px;top:375px;font-size:12px;font-weight:700;color:#1A1A1A">\u2014 ${attr}</div>` : ''}
+                ${ctx ? `<div data-field="context" style="position:absolute;left:85px;top:393px;font-size:11px;color:#555">${ctx}</div>` : ''}
             </div>`;
         }
 

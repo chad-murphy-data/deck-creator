@@ -1,7 +1,7 @@
 """
 Bold template — confident, geometric, artistic-but-corporate.
-Signature: thick color strips, oversized numbers, right-edge color column motif,
-dark title slides, warm gray content backgrounds.
+Signature: thick color strips, oversized numbers, left-edge color column motif,
+warm gray backgrounds throughout.
 """
 
 from pptx import Presentation
@@ -60,7 +60,7 @@ LOGO_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "assets", "
 
 LM = Inches(0.7)
 CW = Inches(8.6)
-EDGE_W = Inches(0.35)   # right-edge color column width
+EDGE_W = Inches(0.35)   # left-edge color column width
 
 
 # ── Helpers ──────────────────────────────────────────────
@@ -115,13 +115,12 @@ def _warm_bg(slide):
     fill.solid(); fill.fore_color.rgb = WARM_GRAY
 
 def _edge_column(slide, color=DK_GREEN):
-    """Right-edge color column — the bold motif."""
-    _rect(slide, Emu(W - EDGE_W), Inches(0), EDGE_W, H, color)
+    """Left-edge color column — the bold motif."""
+    _rect(slide, Inches(0), Inches(0), EDGE_W, H, color)
 
 def _content_title(slide, title, size=28, edge_color=DK_GREEN):
-    """Bold geometric title: thick color bar above, then title text."""
-    _rect(slide, LM, Inches(0.3), Inches(2.0), Inches(0.08), edge_color)
-    _tb(slide, LM, Inches(0.42), Inches(8.0), Inches(0.65), title,
+    """Bold geometric title."""
+    _tb(slide, LM, Inches(0.3), Inches(8.0), Inches(0.65), title,
         TITLE_FONT, size, DARK_TEXT, bold=True, valign=MSO_ANCHOR.BOTTOM)
 
 def _rounded_rect(slide, x, y, w, h, fill):
@@ -171,26 +170,23 @@ def _draw_stepper_bar(slide, labels, active_count, y):
 
 def build_title(prs, c):
     slide = prs.slides.add_slide(prs.slide_layouts[6])
-    bg = slide.background; fill = bg.fill; fill.solid(); fill.fore_color.rgb = CHARCOAL
-    # Bold green block — left side
-    _rect(slide, Inches(0), Inches(0), Inches(0.5), H, DK_GREEN)
-    # Mint accent strip
-    _rect(slide, Inches(0.5), Inches(0), Inches(0.08), H, MINT)
+    _warm_bg(slide)
+    _edge_column(slide)
     # Title
-    _tb(slide, Inches(0.9), Inches(0.8), Inches(8.5), Inches(2.0),
-        c.get("title", "Title"), TITLE_FONT, 38, WHITE, bold=True,
+    _tb(slide, LM, Inches(1.0), Inches(8.0), Inches(1.5),
+        c.get("title", "Title"), TITLE_FONT, 36, DARK_TEXT, bold=True,
         valign=MSO_ANCHOR.BOTTOM)
-    # Thick green bar under title
-    _rect(slide, Inches(0.9), Inches(3.0), Inches(3.0), Inches(0.08), MINT)
+    # Thin accent bar under title
+    _rect(slide, LM, Inches(2.6), Inches(2.5), Inches(0.04), DK_GREEN)
     if c.get("subtitle"):
-        _tb(slide, Inches(0.9), Inches(3.25), Inches(8.5), Inches(0.5),
-            c["subtitle"], BODY_FONT, 16, RGBColor(0xBB, 0xBB, 0xBB))
+        _tb(slide, LM, Inches(2.8), Inches(8.0), Inches(0.5),
+            c["subtitle"], BODY_FONT, 16, MID_TEXT)
     meta = []
     if c.get("author"): meta.append(c["author"])
     if c.get("date"): meta.append(c["date"])
     if meta:
-        _tb(slide, Inches(0.9), Inches(4.3), Inches(5), Inches(0.7),
-            "\n".join(meta), BODY_FONT, 12, RGBColor(0x99, 0x99, 0x99))
+        _tb(slide, LM, Inches(4.1), Inches(5), Inches(0.7),
+            "\n".join(meta), BODY_FONT, 12, MUTED)
     # Logo in upper-right
     logo = c.get("logo_path", LOGO_PATH)
     if logo and os.path.isfile(logo):
@@ -289,8 +285,8 @@ def build_quote(prs, c):
     slide = prs.slides.add_slide(prs.slide_layouts[6])
     _warm_bg(slide); _edge_column(slide, PURPLE)
     _content_title(slide, c.get("title", "In Their Words"), size=22, edge_color=PURPLE)
-    # Bold quote block with thick left border
-    _rect(slide, Inches(0.7), Inches(1.3), Inches(0.1), Inches(2.5), PURPLE)
+    # Quote block with accent left border
+    _rect(slide, Inches(0.7), Inches(1.3), Inches(0.05), Inches(2.5), PURPLE)
     _tb(slide, Inches(1.1), Inches(1.4), Inches(7.5), Inches(2.2),
         c.get("quote", ""), BODY_FONT, 20, DARK_TEXT, italic=True,
         valign=MSO_ANCHOR.MIDDLE, line_spacing=28)
