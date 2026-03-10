@@ -113,7 +113,7 @@ def _slide_title(slide, title, y=None, size=28):
     """Title at top with green rule. Moved UP for more content space."""
     _add_text_box(slide, LM, Inches(0.15), CW, Inches(0.65), title,
                   TITLE_FONT, size, DARK, bold=True, valign=MSO_ANCHOR.BOTTOM)
-    _add_rect(slide, LM, Inches(0.85), Inches(2.5), Inches(0.04), GREEN)
+
 
 # Content starts at 1.05" (below title + rule + breathing room)
 CONTENT_TOP = Inches(1.05)

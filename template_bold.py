@@ -120,7 +120,6 @@ def _edge_column(slide, color=DK_GREEN):
 
 def _content_title(slide, title, size=28, edge_color=DK_GREEN):
     """Bold geometric title: thick color bar above, then title text."""
-    _rect(slide, LM, Inches(0.3), Inches(2.0), Inches(0.08), edge_color)
     _tb(slide, LM, Inches(0.42), Inches(8.0), Inches(0.65), title,
         TITLE_FONT, size, DARK_TEXT, bold=True, valign=MSO_ANCHOR.BOTTOM)
 

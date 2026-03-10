@@ -141,7 +141,7 @@ def _content_title(slide, title, size=26):
     """Editorial-style page title: serif, left-aligned, hairline below."""
     _tb(slide, LM, Inches(0.35), CW, Inches(0.65), title,
         TITLE_FONT, size, CHARCOAL, bold=True, valign=MSO_ANCHOR.BOTTOM)
-    _line(slide, LM, Inches(1.05), Inches(1.8), GOLD_MUTED, 1.5)
+
 
 CONTENT_TOP = Inches(1.25)
 
