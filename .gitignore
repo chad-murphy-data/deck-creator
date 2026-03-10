@@ -1,4 +1,6 @@
 __pycache__/
 *.pyc
 *.pptx
+output/*.pptx
+projects/*.json
 .claude/
