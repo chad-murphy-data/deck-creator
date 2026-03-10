@@ -584,6 +584,20 @@ const SLIDE_SCHEMAS = {
             },
         ]
     },
+    in_brief_reveal: {
+        label: "In Brief (Reveal)",
+        description: "Spotlight reveal: each slide features one item large while others stay small.",
+        category: "content",
+        generatesMultipleSlides: "N",
+        fields: [
+            { key: "title", label: "Slide Title", type: "text", default: "Key Points" },
+            {
+                key: "items", label: "Items", type: "repeating-simple",
+                minItems: 2, maxItems: 6, startItems: 4,
+                itemLabel: "Point", default: ""
+            },
+        ]
+    },
     persona_duo: {
         label: "Persona Duo",
         description: "Side-by-side comparison of two personas.",

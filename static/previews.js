@@ -2863,6 +2863,81 @@ const PREVIEW_RENDERERS = {
     },
 
     /* --------------------------------------------------------------------- */
+    /*  IN_BRIEF_REVEAL — Spotlight reveal                                   */
+    /* --------------------------------------------------------------------- */
+    in_brief_reveal(data, theme, sc) {
+        const t = esc(data.title || 'Key Points');
+        const items = data.items && data.items.length ? data.items : ['', '', '', ''];
+        const accent = _accent(sc);
+        const n = items.length;
+
+        /* Show the FIRST item as featured (preview = slide 1 state) */
+        const featIdx = 0;
+
+        function renderStack(slideOpen, titleHtml, cardBg, featuredBg, textColor, mutedColor, borderColor) {
+            let html = '';
+            let y = 75;
+            for (let i = 0; i < n; i++) {
+                const col = PREVIEW_COLORS[i % 5];
+                const text = esc(items[i]) || _placeholder('Point ' + (i + 1));
+                if (i === featIdx) {
+                    /* Featured card */
+                    html += `<div style="position:absolute;left:${slideOpen.lx}px;top:${y}px;width:${slideOpen.w}px;height:95px;background:${featuredBg};border-radius:6px;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,0.06)">
+                        <div style="position:absolute;left:0;top:0;width:8px;height:100%;background:${col}"></div>
+                        <div style="padding:14px 16px 14px 20px;font-size:14px;font-weight:700;color:${textColor};line-height:1.5">${text}</div>
+                    </div>`;
+                    y += 103;
+                } else {
+                    /* Small row */
+                    const c2 = i < featIdx ? mutedColor : textColor;
+                    html += `<div style="position:absolute;left:${slideOpen.lx}px;top:${y}px;width:${slideOpen.w}px;height:38px;background:${cardBg};border-radius:4px;overflow:hidden">
+                        <div style="position:absolute;left:0;top:0;width:4px;height:100%;background:${col}"></div>
+                        <div style="padding:8px 12px 8px 14px;font-size:11px;color:${c2}">${text}</div>
+                    </div>`;
+                    y += 44;
+                }
+            }
+            return html;
+        }
+
+        if (theme === 'colorful') {
+            const stack = renderStack({lx: 30, w: 940}, '', '#fff', PREVIEW_LIGHTS[0], '#333', '#999', '#eee');
+            return `<div class="preview-slide theme-colorful">
+                ${_colorfulBar(accent)}
+                ${_colorfulTitle(t)}
+                <div data-field="items">${stack}</div>
+            </div>`;
+        }
+
+        if (theme === 'noir') {
+            const stack = renderStack({lx: 45, w: 920}, '', '#141414', '#1a1a1a', '#F0F0F0', '#666', '#2A2A2A');
+            return `<div class="preview-slide theme-noir" style="background:#0D0D0D">
+                ${_noirBar(accent)}
+                ${_noirTitle(t, accent)}
+                <div data-field="items">${stack}</div>
+            </div>`;
+        }
+
+        if (theme === 'bold') {
+            const stack = renderStack({lx: 65, w: 880}, '', '#fff', '#fff', '#1A1A1A', '#888', '#E0DDD8');
+            return `<div class="preview-slide theme-bold" style="background:#F2F0EC">
+                ${_boldBar(accent)}
+                ${_boldTitle(t, accent)}
+                <div data-field="items">${stack}</div>
+            </div>`;
+        }
+
+        /* slick / editorial */
+        const bg = theme === 'editorial' ? '#FAF6F0' : '#fff';
+        const stack = renderStack({lx: 60, w: 900}, '', '#fff', '#fff', '#333', '#999', '#eee');
+        return `${_slideOpen(theme, bg)}
+            ${_slickBar(accent)}
+            ${_slickTitle(t, accent, theme)}
+            <div data-field="items">${stack}</div>
+        </div>`;
+    },
+
+    /* --------------------------------------------------------------------- */
     /*  31. PERSONA_DUO                                                      */
     /* --------------------------------------------------------------------- */
     persona_duo(data, theme, sc) {

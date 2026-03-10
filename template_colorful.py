@@ -1134,6 +1134,44 @@ def build_in_brief_featured(prs, c):
                       s, BODY_FONT, 12, DARK, valign=MSO_ANCHOR.MIDDLE)
 
 
+def build_in_brief_reveal(prs, c):
+    """Spotlight reveal: each slide features one item large while others stay small."""
+    items = c.get("items", [])
+    n = min(len(items), 6)
+    if n == 0:
+        return
+
+    for k in range(n):
+        slide = prs.slides.add_slide(prs.slide_layouts[6])
+        _header(slide, c.get("title", "In Brief"))
+
+        y_cursor = CONTENT_TOP
+        for i in range(n):
+            col = COLORS[i % len(COLORS)]
+            lt = LIGHTS[i % len(LIGHTS)]
+            if i == k:
+                # Featured card -- large, bold
+                h = Inches(1.2)
+                _add_rect(slide, _LM, y_cursor, _CW, h, lt)
+                _add_rect(slide, _LM, y_cursor, Inches(0.12), h, col)
+                _add_text_box(slide, Emu(_LM + Inches(0.25)), y_cursor,
+                              Emu(_CW - Inches(0.5)), h,
+                              items[i], BODY_FONT, 15, DARK, bold=True,
+                              valign=MSO_ANCHOR.MIDDLE, line_spacing=21)
+            else:
+                # Small row
+                h = Inches(0.5)
+                card_bg = lt if i < k else OFF_WHITE
+                _add_rect(slide, _LM, y_cursor, _CW, h, card_bg)
+                _add_rect(slide, _LM, y_cursor, Inches(0.06), h, col)
+                text_color = MID if i < k else DARK
+                _add_text_box(slide, Emu(_LM + Inches(0.18)), y_cursor,
+                              Emu(_CW - Inches(0.4)), h,
+                              items[i], BODY_FONT, 11, text_color,
+                              valign=MSO_ANCHOR.MIDDLE)
+            y_cursor = Emu(y_cursor + h + Inches(0.08))
+
+
 def build_persona_duo(prs, c):
     """Two personas side by side."""
     slide = prs.slides.add_slide(prs.slide_layouts[6])
@@ -1432,6 +1470,7 @@ BUILDERS = {
     "quote_full": build_quote_full,
     "stat_hero": build_stat_hero,
     "in_brief_featured": build_in_brief_featured,
+    "in_brief_reveal": build_in_brief_reveal,
     "persona_duo": build_persona_duo,
     "process_flow_vertical": build_process_flow_vertical,
     "process_flow_reveal": build_process_flow_reveal,

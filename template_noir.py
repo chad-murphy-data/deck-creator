@@ -1065,6 +1065,43 @@ def build_in_brief_featured(prs, c):
             s, BODY_FONT, 12, BRIGHT, valign=MSO_ANCHOR.MIDDLE)
 
 
+def build_in_brief_reveal(prs, c):
+    """Spotlight reveal: each slide features one item large while others stay small."""
+    items = c.get("items", [])
+    n = min(len(items), 6)
+    if n == 0:
+        return
+
+    for k in range(n):
+        slide = prs.slides.add_slide(prs.slide_layouts[6])
+        _dark_bg(slide)
+        _content_header(slide, c.get("title", "In Brief"), CORAL)
+
+        y_cursor = CONTENT_TOP
+        for i in range(n):
+            col = ACCENTS[i % len(ACCENTS)]
+            if i == k:
+                # Featured card -- large, bold
+                h = Inches(1.2)
+                _rect(slide, LM, y_cursor, CW, h, NEAR_BLACK)
+                _rect(slide, LM, y_cursor, Inches(0.12), h, col)
+                _tb(slide, Emu(LM + Inches(0.25)), y_cursor,
+                    Emu(CW - Inches(0.3)), h,
+                    items[i], BODY_FONT, 15, WHITE, bold=True,
+                    valign=MSO_ANCHOR.MIDDLE, line_spacing=21)
+            else:
+                # Small row
+                h = Inches(0.5)
+                _rect(slide, LM, y_cursor, CW, h, NEAR_BLACK)
+                _rect(slide, LM, y_cursor, Inches(0.06), h, col)
+                text_color = DIM if i < k else BRIGHT
+                _tb(slide, Emu(LM + Inches(0.18)), y_cursor,
+                    Emu(CW - Inches(0.3)), h,
+                    items[i], BODY_FONT, 11, text_color,
+                    valign=MSO_ANCHOR.MIDDLE)
+            y_cursor = Emu(y_cursor + h + Inches(0.08))
+
+
 def build_persona_duo(prs, c):
     slide = prs.slides.add_slide(prs.slide_layouts[6])
     _dark_bg(slide)
@@ -1286,7 +1323,8 @@ BUILDERS = {
     "risk_tradeoff": build_risk_tradeoff, "appendix": build_appendix,
     "before_after": build_before_after, "summary": build_summary,
     "quote_full": build_quote_full, "stat_hero": build_stat_hero,
-    "in_brief_featured": build_in_brief_featured, "persona_duo": build_persona_duo,
+    "in_brief_featured": build_in_brief_featured, "in_brief_reveal": build_in_brief_reveal,
+    "persona_duo": build_persona_duo,
     "process_flow_vertical": build_process_flow_vertical,
     "process_flow_reveal": build_process_flow_reveal,
     "text_cards": build_text_cards, "text_columns": build_text_columns,
