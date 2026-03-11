@@ -115,8 +115,8 @@ def _warm_bg(slide):
     fill.solid(); fill.fore_color.rgb = WARM_GRAY
 
 def _edge_column(slide, color=DK_GREEN):
-    """Right-edge color column — the bold motif."""
-    _rect(slide, Emu(W - EDGE_W), Inches(0), EDGE_W, H, color)
+    """Left-edge color column — the bold motif."""
+    _rect(slide, Inches(0), Inches(0), EDGE_W, H, color)
 
 def _content_title(slide, title, size=28, edge_color=DK_GREEN):
     """Bold geometric title: thick color bar above, then title text."""
