@@ -1,6 +1,7 @@
 __pycache__/
 *.pyc
 *.pptx
+!gg_editorial_v2.pptx
 output/*.pptx
 projects/*.json
 .claude/
