@@ -62,17 +62,6 @@ def _add_oval(slide, x, y, w, h, fill_color):
     shape.line.fill.background()
     return shape
 
-DEFAULT_ICON_SHAPES = [MSO_SHAPE.OVAL, MSO_SHAPE.RECTANGLE, MSO_SHAPE.ISOSCELES_TRIANGLE]
-
-def _add_icon_or_image(slide, img_path, x, y, w, h, shape_type, fill_color):
-    """Add a user-supplied image or a coloured placeholder shape."""
-    if img_path and os.path.exists(img_path):
-        slide.shapes.add_picture(img_path, x, y, w, h)
-    else:
-        s = slide.shapes.add_shape(shape_type, x, y, w, h)
-        s.fill.solid(); s.fill.fore_color.rgb = fill_color
-        s.line.fill.background()
-
 
 def _font_fallback(font_name):
     """Return (primary, fallback) for a font name."""
@@ -126,55 +115,10 @@ def _add_text_box(slide, x, y, w, h, text, font_name=BODY_FONT, font_size=12,
     return txBox
 
 
-def _add_rounded_rect(slide, x, y, w, h, fill_color):
-    shape = slide.shapes.add_shape(MSO_SHAPE.ROUNDED_RECTANGLE, x, y, w, h)
-    shape.fill.solid(); shape.fill.fore_color.rgb = fill_color
-    shape.line.fill.background()
-    pg = shape._element.find('.//' + qn('a:prstGeom'))
-    if pg is not None:
-        av = pg.find(qn('a:avLst'))
-        if av is None: av = etree.SubElement(pg, qn('a:avLst'))
-        for g in av.findall(qn('a:gd')): av.remove(g)
-        g = etree.SubElement(av, qn('a:gd')); g.set('name','adj'); g.set('fmla','val 5000')
-    return shape
-
-
 def _header(slide, title, color=GREEN):
     _add_rect(slide, Inches(0), Inches(0), W, Inches(1.0), color)
     _add_text_box(slide, Inches(0.5), Inches(0.15), Inches(8), Inches(0.7),
                   title, TITLE_FONT, 24, WHITE, bold=True, valign=MSO_ANCHOR.MIDDLE)
-
-CONTENT_TOP = Inches(1.15)
-_LM = Inches(0.75)
-_CW = Inches(8.5)
-
-
-def _draw_stepper_bar(slide, labels, active_count, y):
-    """Reusable stepper bar: numbered circles + connecting lines + labels."""
-    n = len(labels)
-    cs = Inches(0.42)
-    total_w = _CW
-    spacing = int(total_w / max(n - 1, 1)) if n > 1 else 0
-    start_x = _LM
-    for i in range(n):
-        cx = Emu(start_x + i * spacing) if n > 1 else Emu(start_x + total_w // 2 - cs // 2)
-        active = i < active_count
-        color = COLORS[i % len(COLORS)] if active else LIGHT
-        _add_oval(slide, cx, y, cs, cs, color)
-        tc = WHITE if active else MID
-        _add_text_box(slide, cx, y, cs, cs, str(i + 1), TITLE_FONT, 15, tc,
-                      bold=True, align=PP_ALIGN.CENTER, valign=MSO_ANCHOR.MIDDLE)
-        lw = Inches(1.4)
-        label_x = Emu(cx - (lw - cs) // 2)
-        _add_text_box(slide, label_x, Emu(y + cs + Inches(0.04)),
-                      lw, Inches(0.25), labels[i],
-                      BODY_FONT, 9, color if active else MID,
-                      bold=active, align=PP_ALIGN.CENTER)
-        if i < n - 1:
-            line_x1 = Emu(cx + cs + Inches(0.08))
-            next_cx = Emu(start_x + (i + 1) * spacing)
-            line_x2 = Emu(next_cx - Inches(0.08))
-            _add_rect(slide, line_x1, Emu(y + cs // 2), Emu(line_x2 - line_x1), Inches(0.025), LIGHT)
 
 
 # ============================================================
@@ -185,7 +129,7 @@ def build_title(prs, c):
     slide = prs.slides.add_slide(prs.slide_layouts[6])
     _add_rect(slide, Inches(0), Inches(0), Inches(0.12), H, GREEN)
     _add_text_box(slide, Inches(0.5), Inches(0.8), Inches(6.5), Inches(2.0),
-                  c.get("title", "Title"), TITLE_FONT, 36, GREEN, bold=True,
+                  c.get("title", "Title"), TITLE_FONT, 42, GREEN, bold=True,
                   valign=MSO_ANCHOR.BOTTOM)
     # Multi-color bar
     uw = Inches(1.5)
@@ -208,9 +152,6 @@ def build_title(prs, c):
     logo = c.get("logo_path", LOGO_PATH)
     if logo and os.path.isfile(logo):
         slide.shapes.add_picture(logo, Inches(7.6), Inches(0.3), Inches(2.0))
-    img = c.get("imagePath", "")
-    if img and os.path.exists(img):
-        slide.shapes.add_picture(img, Inches(5.4), Inches(0.3), Inches(4.3), Inches(5.0))
 
 
 def build_in_brief(prs, c):
@@ -260,22 +201,8 @@ def build_section_divider(prs, c):
 def build_stat_callout(prs, c):
     slide = prs.slides.add_slide(prs.slide_layouts[6])
     _header(slide, c.get("title", "Key Metric"))
-    # Visual anchor circle behind stat
-    sc = GREEN
-    cs = Inches(2.2)
-    cx = Emu((W - cs) // 2)
-    cy = Emu(Inches(1.5))
-    oval = slide.shapes.add_shape(MSO_SHAPE.OVAL, cx, cy, cs, cs)
-    oval_fill = oval.fill
-    oval_fill.solid()
-    r, g, b = sc[0], sc[1], sc[2]
-    light_r = min(255, r + int((255 - r) * 0.85))
-    light_g = min(255, g + int((255 - g) * 0.85))
-    light_b = min(255, b + int((255 - b) * 0.85))
-    oval_fill.fore_color.rgb = RGBColor(light_r, light_g, light_b)
-    oval.line.fill.background()
     _add_text_box(slide, Inches(0.5), Inches(1.3), Inches(9), Inches(1.8),
-                  c.get("stat", "—"), TITLE_FONT, 96, GREEN, bold=True,
+                  c.get("stat", "—"), TITLE_FONT, 72, GREEN, bold=True,
                   align=PP_ALIGN.CENTER, valign=MSO_ANCHOR.MIDDLE)
     if c.get("headline"):
         _add_text_box(slide, Inches(1.0), Inches(3.1), Inches(8), Inches(0.7),
@@ -309,51 +236,30 @@ def build_comparison(prs, c):
     slide = prs.slides.add_slide(prs.slide_layouts[6])
     _header(slide, c.get("title", "Comparison"))
 
-    left_color = ORANGE
-    right_color = GREEN
+    # Left
+    _add_rect(slide, Inches(0.5), Inches(1.2), Inches(4.2), Inches(3.6), ORANGE_LIGHT)
+    _add_rect(slide, Inches(0.5), Inches(1.2), Inches(4.2), Inches(0.1), ORANGE)
+    _add_text_box(slide, Inches(0.7), Inches(1.4), Inches(3.8), Inches(0.4),
+                  c.get("leftLabel", "Before"), TITLE_FONT, 16, ORANGE, bold=True)
+    for i, item in enumerate(c.get("leftItems", [])):
+        _add_text_box(slide, Inches(0.7), Emu(Inches(1.95) + i * Inches(0.55)),
+                      Inches(3.8), Inches(0.5), item, BODY_FONT, 11, DARK)
 
-    left_label = c.get("leftLabel", "Before")
-    right_label = c.get("rightLabel", "After")
-    left_items = c.get("leftItems", [])
-    right_items = c.get("rightItems", [])
-
-    content_top = Inches(1.2)
-    card_w = Inches(4.2)
-    card_h = Inches(3.8)
-    gap = Inches(0.4)
-    header_h = Inches(0.5)
-
-    # Left card
-    left_x = Inches(0.5)
-    _add_rect(slide, left_x, content_top, card_w, card_h, WHITE)
-    _add_rect(slide, left_x, content_top, card_w, header_h, left_color)
-    _add_text_box(slide, Emu(left_x + Inches(0.2)), content_top,
-                  Emu(card_w - Inches(0.4)), header_h,
-                  left_label, BODY_FONT, 14, WHITE, bold=True,
+    # Divider with "vs" circle
+    _add_rect(slide, Inches(4.85), Inches(1.4), Inches(0.14), Inches(3.2), GREEN)
+    _add_oval(slide, Inches(4.72), Inches(2.7), Inches(0.4), Inches(0.4), GREEN)
+    _add_text_box(slide, Inches(4.72), Inches(2.7), Inches(0.4), Inches(0.4),
+                  "vs", BODY_FONT, 10, WHITE, bold=True, align=PP_ALIGN.CENTER,
                   valign=MSO_ANCHOR.MIDDLE)
-    for i, item in enumerate(left_items[:6]):
-        iy = Emu(content_top + header_h + Inches(0.15) + i * Inches(0.5))
-        text = item if isinstance(item, str) else str(item)
-        _add_text_box(slide, Emu(left_x + Inches(0.25)), iy,
-                      Emu(card_w - Inches(0.5)), Inches(0.45),
-                      text, BODY_FONT, 13, DARK, bold=True,
-                      valign=MSO_ANCHOR.MIDDLE)
 
-    # Right card
-    right_x = Emu(left_x + card_w + gap)
-    _add_rect(slide, right_x, content_top, card_w, card_h, WHITE)
-    _add_rect(slide, right_x, content_top, card_w, header_h, right_color)
-    _add_text_box(slide, Emu(right_x + Inches(0.2)), content_top,
-                  Emu(card_w - Inches(0.4)), header_h,
-                  right_label, BODY_FONT, 14, WHITE, bold=True,
-                  valign=MSO_ANCHOR.MIDDLE)
-    for i, item in enumerate(right_items[:6]):
-        iy = Emu(content_top + header_h + Inches(0.15) + i * Inches(0.5))
-        text = item if isinstance(item, str) else str(item)
-        _add_text_box(slide, Emu(right_x + Inches(0.25)), iy,
-                      Emu(card_w - Inches(0.5)), Inches(0.45),
-                      text, BODY_FONT, 13, DARK, bold=True,
-                      valign=MSO_ANCHOR.MIDDLE)
+    # Right
+    _add_rect(slide, Inches(5.3), Inches(1.2), Inches(4.2), Inches(3.6), GREEN_LIGHT)
+    _add_rect(slide, Inches(5.3), Inches(1.2), Inches(4.2), Inches(0.1), GREEN)
+    _add_text_box(slide, Inches(5.5), Inches(1.4), Inches(3.8), Inches(0.4),
+                  c.get("rightLabel", "After"), TITLE_FONT, 16, GREEN, bold=True)
+    for i, item in enumerate(c.get("rightItems", [])):
+        _add_text_box(slide, Inches(5.5), Emu(Inches(1.95) + i * Inches(0.55)),
+                      Inches(3.8), Inches(0.5), item, BODY_FONT, 11, DARK)
 
 
 def build_text_graph(prs, c):
@@ -388,97 +294,45 @@ def build_process_flow(prs, c):
     slide = prs.slides.add_slide(prs.slide_layouts[6])
     _header(slide, c.get("title", "Process"))
     steps = c.get("steps", [])
-    n = min(len(steps), 5)
-    if n == 0: return
+    count = min(len(steps), 5)
+    if count == 0:
+        return
 
-    labels = [s.get("title", f"Step {i+1}") for i, s in enumerate(steps[:n])]
-    _draw_stepper_bar(slide, labels, n, Emu(CONTENT_TOP + Inches(0.05)))
+    total_w = 8.5
+    arrow_w = 0.35
+    step_w = (total_w - (count - 1) * arrow_w) / count
+    startX = 0.75
+    stepY = 1.4
+    stepH = 3.4
 
-    card_top = Emu(CONTENT_TOP + Inches(0.85))
-    gap = Inches(0.2)
+    for i, step in enumerate(steps[:count]):
+        x = Inches(startX + i * (step_w + arrow_w))
+        y = Inches(stepY)
+        sw = Inches(step_w)
+        sh = Inches(stepH)
+        col = COLORS[i % len(COLORS)]
+        lt = LIGHTS[i % len(LIGHTS)]
 
-    if n <= 3:
-        card_w = int((_CW - (n - 1) * gap) / n)
-        card_h = Inches(3.0)
-        for i, step in enumerate(steps[:n]):
-            cx = Emu(_LM + i * (card_w + gap))
-            _add_rounded_rect(slide, cx, card_top, card_w, card_h, OFF_WHITE)
-            _add_rect(slide, cx, card_top, Inches(0.06), card_h, COLORS[i % len(COLORS)])
-            _add_text_box(slide, Emu(cx + Inches(0.2)), Emu(card_top + Inches(0.15)),
-                          Emu(card_w - Inches(0.4)), Inches(0.5),
-                          step.get("title", ""), BODY_FONT, 13, DARK, bold=True)
-            if step.get("detail"):
-                _add_text_box(slide, Emu(cx + Inches(0.2)), Emu(card_top + Inches(0.65)),
-                              Emu(card_w - Inches(0.4)), Emu(card_h - Inches(0.85)),
-                              step["detail"], BODY_FONT, 10, MID, line_spacing=14)
-    elif n == 4:
-        card_w = int((_CW - gap) / 2)
-        card_h = Inches(1.4)
-        for i, step in enumerate(steps[:4]):
-            col = i % 2
-            row = i // 2
-            cx = Emu(_LM + col * (card_w + gap))
-            cy = Emu(card_top + row * (card_h + gap))
-            _add_rounded_rect(slide, cx, cy, card_w, card_h, OFF_WHITE)
-            _add_rect(slide, cx, cy, Inches(0.06), card_h, COLORS[i % len(COLORS)])
-            _add_text_box(slide, Emu(cx + Inches(0.2)), Emu(cy + Inches(0.1)),
-                          Emu(card_w - Inches(0.4)), Inches(0.4),
-                          step.get("title", ""), BODY_FONT, 12, DARK, bold=True)
-            if step.get("detail"):
-                _add_text_box(slide, Emu(cx + Inches(0.2)), Emu(cy + Inches(0.5)),
-                              Emu(card_w - Inches(0.4)), Emu(card_h - Inches(0.65)),
-                              step["detail"], BODY_FONT, 10, MID, line_spacing=14)
-    else:
-        card_w = int((_CW - 2 * gap) / 3)
-        card_h = Inches(1.35)
-        for i, step in enumerate(steps[:5]):
-            if i < 3:
-                cx = Emu(_LM + i * (card_w + gap))
-                cy = card_top
-            else:
-                offset = (_CW - 2 * card_w - gap) // 2
-                cx = Emu(_LM + offset + (i - 3) * (card_w + gap))
-                cy = Emu(card_top + card_h + gap)
-            _add_rounded_rect(slide, cx, cy, card_w, card_h, OFF_WHITE)
-            _add_rect(slide, cx, cy, Inches(0.06), card_h, COLORS[i % len(COLORS)])
-            _add_text_box(slide, Emu(cx + Inches(0.2)), Emu(cy + Inches(0.1)),
-                          Emu(card_w - Inches(0.4)), Inches(0.35),
-                          step.get("title", ""), BODY_FONT, 12, DARK, bold=True)
-            if step.get("detail"):
-                _add_text_box(slide, Emu(cx + Inches(0.2)), Emu(cy + Inches(0.45)),
-                              Emu(card_w - Inches(0.4)), Emu(card_h - Inches(0.55)),
-                              step["detail"], BODY_FONT, 10, MID, line_spacing=14)
-
-
-def build_process_flow_reveal(prs, c):
-    """Generates N slides, one per step, with progressive stepper."""
-    steps = c.get("steps", [])
-    n = min(len(steps), 5)
-    if n == 0: return
-
-    labels = [s.get("title", f"Step {i+1}") for i, s in enumerate(steps[:n])]
-
-    for step_idx in range(n):
-        slide = prs.slides.add_slide(prs.slide_layouts[6])
-        _header(slide, c.get("title", "Process"))
-
-        _draw_stepper_bar(slide, labels, step_idx + 1, Emu(CONTENT_TOP + Inches(0.05)))
-
-        card_y = Emu(CONTENT_TOP + Inches(0.85))
-        card_w = Inches(6.0)
-        card_h = Inches(3.0)
-        card_x = Emu(_LM + (_CW - card_w) // 2)
-
-        step = steps[step_idx]
-        _add_rounded_rect(slide, card_x, card_y, card_w, card_h, OFF_WHITE)
-        _add_rect(slide, card_x, card_y, Inches(0.08), card_h, COLORS[step_idx % len(COLORS)])
-        _add_text_box(slide, Emu(card_x + Inches(0.25)), Emu(card_y + Inches(0.2)),
-                      Emu(card_w - Inches(0.5)), Inches(0.6),
-                      step.get("title", ""), BODY_FONT, 16, DARK, bold=True)
+        _add_rect(slide, x, y, sw, sh, lt)
+        _add_rect(slide, x, y, sw, Inches(0.1), col)
+        _add_oval(slide, Emu(x + Inches(0.1)), Emu(y + Inches(0.2)),
+                  Inches(0.4), Inches(0.4), col)
+        _add_text_box(slide, Emu(x + Inches(0.1)), Emu(y + Inches(0.2)),
+                      Inches(0.4), Inches(0.4), str(i + 1),
+                      TITLE_FONT, 13, WHITE, bold=True, align=PP_ALIGN.CENTER,
+                      valign=MSO_ANCHOR.MIDDLE)
+        _add_text_box(slide, Emu(x + Inches(0.1)), Emu(y + Inches(0.7)),
+                      Emu(sw - Inches(0.2)), Inches(0.6),
+                      step.get("title", ""), BODY_FONT, 11, DARK, bold=True)
         if step.get("detail"):
-            _add_text_box(slide, Emu(card_x + Inches(0.25)), Emu(card_y + Inches(0.85)),
-                          Emu(card_w - Inches(0.5)), Emu(card_h - Inches(1.1)),
-                          step["detail"], BODY_FONT, 12, MID, line_spacing=16)
+            _add_text_box(slide, Emu(x + Inches(0.1)), Emu(y + Inches(1.35)),
+                          Emu(sw - Inches(0.2)), Inches(1.8),
+                          step["detail"], BODY_FONT, 9, MID)
+        if i < count - 1:
+            _add_text_box(slide, Emu(x + sw + Inches(0.05)), Emu(y + Inches(1.2)),
+                          Emu(Inches(arrow_w) - Inches(0.1)), Inches(0.5),
+                          "\u2192", BODY_FONT, 18, MID, align=PP_ALIGN.CENTER,
+                          valign=MSO_ANCHOR.MIDDLE)
 
 
 def build_matrix(prs, c):
@@ -552,11 +406,10 @@ def build_hypotheses(prs, c):
 def build_wsn_dense(prs, c):
     slide = prs.slides.add_slide(prs.slide_layouts[6])
     _header(slide, c.get("title", "Key Finding"))
-    labels = c.get("labels", ["What", "So What", "Now What"])
     cols = [
-        (labels[0], GREEN, GREEN_LIGHT, c.get("what", {})),
-        (labels[1], BLUE, BLUE_LIGHT, c.get("soWhat", {})),
-        (labels[2], PURPLE, PURPLE_LIGHT, c.get("nowWhat", {})),
+        ("What", GREEN, GREEN_LIGHT, c.get("what", {})),
+        ("So What", BLUE, BLUE_LIGHT, c.get("soWhat", {})),
+        ("Now What", PURPLE, PURPLE_LIGHT, c.get("nowWhat", {})),
     ]
     colW = Inches(2.85)
     gap = Inches(0.2)
@@ -572,64 +425,69 @@ def build_wsn_dense(prs, c):
                       Emu(colW - Inches(0.3)), Inches(0.35),
                       label, TITLE_FONT, 14, color, bold=True)
         _add_text_box(slide, Emu(x + Inches(0.15)), Emu(startY + Inches(0.55)),
-                      Emu(colW - Inches(0.3)), Inches(0.8),
+                      Emu(colW - Inches(0.3)), Inches(1.2),
                       data.get("headline", ""), BODY_FONT, 12, DARK, bold=True)
         if data.get("detail"):
-            _add_text_box(slide, Emu(x + Inches(0.15)), Emu(startY + Inches(1.4)),
+            _add_text_box(slide, Emu(x + Inches(0.15)), Emu(startY + Inches(1.8)),
                           Emu(colW - Inches(0.3)), Inches(1.7),
                           data["detail"], BODY_FONT, 10, MID)
 
 
 def build_wsn_reveal(prs, c):
-    """3 progressive slides: What -> So What -> Now What with running summary."""
-    labels = c.get("labels", ["What", "So What", "Now What"])
-    WSN_KEYS = ["what", "soWhat", "nowWhat"]
-    WSN_COLORS = [GREEN, BLUE, PURPLE]
-    WSN_LIGHTS = [GREEN_LIGHT, BLUE_LIGHT, PURPLE_LIGHT]
+    def _zone(slide, x, label, color, light, data, condensed=False):
+        h = Inches(2.0) if condensed else Inches(3.4)
+        y = Inches(1.2)
+        w = Inches(4.15)
+        _add_rect(slide, x, y, w, h, light)
+        _add_rect(slide, x, y, w, Inches(0.1), color)
+        fs = 10 if condensed else 11
+        _add_text_box(slide, Emu(x + Inches(0.12)), Emu(y + Inches(0.15)),
+                      Inches(2), Inches(0.3), label, TITLE_FONT, fs, color, bold=True)
+        _add_text_box(slide, Emu(x + Inches(0.12)), Emu(y + Inches(0.5)),
+                      Emu(w - Inches(0.24)), Inches(0.7) if condensed else Inches(0.9),
+                      data.get("headline", ""), BODY_FONT, 10 if condensed else 13,
+                      DARK, bold=True)
+        if data.get("detail"):
+            _add_text_box(slide, Emu(x + Inches(0.12)),
+                          Emu(y + Inches(1.2) if condensed else y + Inches(1.45)),
+                          Emu(w - Inches(0.24)), Inches(0.55) if condensed else Inches(1.6),
+                          data["detail"], BODY_FONT, 8.5 if condensed else 11, MID)
 
-    for step in range(3):
-        slide = prs.slides.add_slide(prs.slide_layouts[6])
+    leftX = Inches(0.5)
+    rightX = Inches(5.2)
+
+    def _hdr(slide):
         _add_rect(slide, Inches(0), Inches(0), W, Inches(0.15), GREEN)
         _add_text_box(slide, Inches(0.5), Inches(0.3), Inches(9), Inches(0.65),
                       c.get("title", "Key Finding"), TITLE_FONT, 28, DARK, bold=True)
 
-        # Stepper bar at top
-        _draw_stepper_bar(slide, labels, step + 1, Emu(CONTENT_TOP + Inches(0.05)))
+    s1 = prs.slides.add_slide(prs.slide_layouts[6])
+    _hdr(s1)
+    _zone(s1, leftX, "What We Found", GREEN, GREEN_LIGHT, c.get("what", {}))
 
-        # Featured card for current step
-        data = c.get(WSN_KEYS[step], {})
-        card_y = Emu(CONTENT_TOP + Inches(0.85))
-        card_w = Inches(7.0)
-        card_h = Inches(2.4)
-        card_x = Emu(_LM + (_CW - card_w) // 2)
+    s2 = prs.slides.add_slide(prs.slide_layouts[6])
+    _hdr(s2)
+    _zone(s2, leftX, "What We Found", GREEN, GREEN_LIGHT, c.get("what", {}))
+    _zone(s2, rightX, "So What", BLUE, BLUE_LIGHT, c.get("soWhat", {}))
 
-        _add_rounded_rect(slide, card_x, card_y, card_w, card_h, WSN_LIGHTS[step])
-        _add_rect(slide, card_x, card_y, Inches(0.10), card_h, WSN_COLORS[step])
-        _add_text_box(slide, Emu(card_x + Inches(0.25)), Emu(card_y + Inches(0.15)),
-                      Emu(card_w - Inches(0.5)), Inches(0.6),
-                      data.get("headline", ""), BODY_FONT, 15, DARK, bold=True,
-                      line_spacing=18)
-        if data.get("detail"):
-            _add_text_box(slide, Emu(card_x + Inches(0.25)), Emu(card_y + Inches(0.8)),
-                          Emu(card_w - Inches(0.5)), Emu(card_h - Inches(1.0)),
-                          data["detail"], BODY_FONT, 12, MID, line_spacing=16)
+    s3 = prs.slides.add_slide(prs.slide_layouts[6])
+    _hdr(s3)
+    _zone(s3, leftX, "What We Found", GREEN, GREEN_LIGHT, c.get("what", {}), True)
+    _zone(s3, rightX, "So What", BLUE, BLUE_LIGHT, c.get("soWhat", {}), True)
 
-        # Running summary (only for step >= 1)
-        if step > 0:
-            summary_y = Emu(card_y + card_h + Inches(0.15))
-            # Thin divider
-            _add_rect(slide, _LM, summary_y, Inches(3.0), Inches(0.02), LIGHT)
-            # Previous step summaries
-            for j in range(step):
-                iy = Emu(summary_y + Inches(0.1) + j * Inches(0.28))
-                prev_data = c.get(WSN_KEYS[j], {})
-                summary_text = prev_data.get("summary", prev_data.get("headline", ""))
-                # Small bullet square
-                _add_rect(slide, _LM, Emu(iy + Inches(0.05)), Inches(0.08), Inches(0.08), LIGHT)
-                _add_text_box(slide, Emu(_LM + Inches(0.18)), iy,
-                              Emu(_CW - Inches(0.18)), Inches(0.25),
-                              summary_text, BODY_FONT, 9, MID,
-                              valign=MSO_ANCHOR.MIDDLE)
+    nwY = Inches(3.4)
+    nwH = Inches(1.85)
+    _add_rect(s3, Inches(0.5), nwY, Inches(9.0), nwH, PURPLE_LIGHT)
+    _add_rect(s3, Inches(0.5), nwY, Inches(9.0), Inches(0.1), PURPLE)
+    _add_text_box(s3, Inches(0.65), Emu(nwY + Inches(0.15)),
+                  Inches(2), Inches(0.3), "Now What", TITLE_FONT, 12, PURPLE, bold=True)
+    nw = c.get("nowWhat", {})
+    _add_text_box(s3, Inches(0.65), Emu(nwY + Inches(0.5)),
+                  Inches(8.7), Inches(0.65),
+                  nw.get("headline", ""), BODY_FONT, 18, DARK, bold=True)
+    if nw.get("detail"):
+        _add_text_box(s3, Inches(0.65), Emu(nwY + Inches(1.15)),
+                      Inches(8.7), Inches(0.55), nw["detail"], BODY_FONT, 11, MID)
 
 
 def build_findings_recs(prs, c):
@@ -670,8 +528,8 @@ def build_findings_recs_dense(prs, c):
     _header(slide, c.get("title", "Complete Findings"))
     items = c.get("items", [])
     startY = Inches(1.15)
-    rowH = Inches(0.56)
-    gap = Inches(0.08)
+    rowH = Inches(0.47)
+    gap = Inches(0.06)
 
     for i, item in enumerate(items[:8]):
         y = Emu(startY + i * (rowH + gap))
@@ -686,13 +544,13 @@ def build_findings_recs_dense(prs, c):
                       TITLE_FONT, 9, WHITE, bold=True, align=PP_ALIGN.CENTER,
                       valign=MSO_ANCHOR.MIDDLE)
         _add_text_box(slide, Inches(0.55), y, Inches(4.1), rowH,
-                      item.get("finding", ""), BODY_FONT, 11, DARK,
+                      item.get("finding", ""), BODY_FONT, 9, DARK,
                       valign=MSO_ANCHOR.MIDDLE)
 
         _add_rect(slide, Inches(4.85), y, Inches(4.65), rowH, bg)
         _add_rect(slide, Inches(4.85), y, Inches(0.06), rowH, BLUE)
         _add_text_box(slide, Inches(5.0), y, Inches(4.4), rowH,
-                      item.get("recommendation", ""), BODY_FONT, 11, DARK,
+                      item.get("recommendation", ""), BODY_FONT, 9, DARK,
                       valign=MSO_ANCHOR.MIDDLE)
 
 
@@ -773,16 +631,19 @@ def build_progressive_reveal(prs, c):
             _add_text_box(slide, Inches(0.7), Inches(2.05), Inches(8.6), Inches(1.2),
                           cur["detail"], BODY_FONT, 11, MID)
 
-        # Thin subtle divider
-        _add_rect(slide, _LM, Inches(3.7), Inches(3.0), Inches(0.02), LIGHT)
-        # Running summary items (no header, all gray)
+        _add_rect(slide, Inches(0), Inches(3.7), W, Inches(0.08), GREEN)
+        _add_text_box(slide, Inches(0.5), Inches(3.85), Inches(3), Inches(0.25),
+                      "Running Takeaways", TITLE_FONT, 9, GREEN, bold=True)
+
         for j in range(n + 1):
-            ty = Emu(Inches(3.8) + j * Inches(0.28))
-            _add_rect(slide, _LM, Emu(ty + Inches(0.04)), Inches(0.08), Inches(0.08), LIGHT)
-            _add_text_box(slide, Emu(_LM + Inches(0.18)), ty,
-                          Emu(_CW - Inches(0.18)), Inches(0.25),
+            ty = Emu(Inches(4.15) + j * Inches(0.32))
+            active = j == n
+            jcol = COLORS[j % len(COLORS)]
+            _add_oval(slide, Inches(0.5), Emu(ty + Inches(0.02)),
+                      Inches(0.18), Inches(0.18), jcol)
+            _add_text_box(slide, Inches(0.8), ty, Inches(8.7), Inches(0.3),
                           takeaways[j].get("summary", takeaways[j].get("headline", "")),
-                          BODY_FONT, 9, MID,
+                          BODY_FONT, 9, DARK if active else MID, bold=active,
                           valign=MSO_ANCHOR.MIDDLE)
 
 
@@ -1145,44 +1006,6 @@ def build_in_brief_featured(prs, c):
                       s, BODY_FONT, 12, DARK, valign=MSO_ANCHOR.MIDDLE)
 
 
-def build_in_brief_reveal(prs, c):
-    """Spotlight reveal: each slide features one item large while others stay small."""
-    items = c.get("items", [])
-    n = min(len(items), 6)
-    if n == 0:
-        return
-
-    for k in range(n):
-        slide = prs.slides.add_slide(prs.slide_layouts[6])
-        _header(slide, c.get("title", "In Brief"))
-
-        y_cursor = Emu(CONTENT_TOP + Inches(0.12))
-        for i in range(n):
-            col = COLORS[i % len(COLORS)]
-            lt = LIGHTS[i % len(LIGHTS)]
-            if i == k:
-                # Featured card -- large, bold
-                h = Inches(1.2)
-                _add_rect(slide, _LM, y_cursor, _CW, h, lt)
-                _add_rect(slide, _LM, y_cursor, Inches(0.12), h, col)
-                _add_text_box(slide, Emu(_LM + Inches(0.25)), y_cursor,
-                              Emu(_CW - Inches(0.5)), h,
-                              items[i], BODY_FONT, 15, DARK, bold=True,
-                              valign=MSO_ANCHOR.MIDDLE, line_spacing=21)
-            else:
-                # Small row
-                h = Inches(0.5)
-                _add_rect(slide, _LM, y_cursor, _CW, h, OFF_WHITE)
-                _add_rect(slide, _LM, y_cursor, Inches(0.06), h, col)
-                _add_text_box(slide, Emu(_LM + Inches(0.18)), y_cursor,
-                              Emu(_CW - Inches(0.4)), h,
-                              items[i], BODY_FONT, 11, DARK,
-                              valign=MSO_ANCHOR.MIDDLE)
-            # Extra gap around the featured card
-            gap = Inches(0.15) if i == k or (i + 1 < n and i + 1 == k) else Inches(0.08)
-            y_cursor = Emu(y_cursor + h + gap)
-
-
 def build_persona_duo(prs, c):
     """Two personas side by side."""
     slide = prs.slides.add_slide(prs.slide_layouts[6])
@@ -1242,7 +1065,7 @@ def build_process_flow_vertical(prs, c):
                       Inches(0.4), str(i + 1), TITLE_FONT, 13, WHITE, bold=True,
                       align=PP_ALIGN.CENTER, valign=MSO_ANCHOR.MIDDLE)
         _add_text_box(slide, Inches(1.3), Emu(y + Inches(0.15)), Inches(3.0),
-                      Inches(0.4), step.get("title", ""), BODY_FONT, 12, DARK,
+                      Inches(0.4), step.get("title", ""), BODY_FONT, 13, DARK,
                       bold=True, valign=MSO_ANCHOR.MIDDLE)
         if step.get("detail"):
             _add_text_box(slide, Inches(1.3), Emu(y + Inches(0.6)),
@@ -1447,72 +1270,6 @@ def build_text_annotated(prs, c):
                       valign=MSO_ANCHOR.MIDDLE, line_spacing=16)
 
 
-def build_icon_cards(prs, c):
-    """Row of 2-3 cards, each with an icon/image above and title+detail below."""
-    slide = prs.slides.add_slide(prs.slide_layouts[6])
-    _header(slide, c.get("title", "Key Points"))
-    items = c.get("items", []); n = min(len(items), 3)
-    if n == 0: return
-    gap = Inches(0.25)
-    cardW = Emu((_CW - (n - 1) * gap) / n)
-    iconSize = Inches(0.8)
-    iconTop = CONTENT_TOP
-    cardTop = Emu(CONTENT_TOP + Inches(1.1))
-    cardH = Emu(Inches(3.8) - Inches(1.1))
-    for i, item in enumerate(items[:n]):
-        x = Emu(_LM + i * (cardW + gap))
-        col = COLORS[i % len(COLORS)]
-        lt = LIGHTS[i % len(LIGHTS)]
-        icon_x = Emu(x + (cardW - iconSize) // 2)
-        img_path = item.get("imagePath", "") if isinstance(item, dict) else ""
-        shape_type = DEFAULT_ICON_SHAPES[i % len(DEFAULT_ICON_SHAPES)]
-        _add_icon_or_image(slide, img_path, icon_x, iconTop, iconSize, iconSize, shape_type, col)
-        _add_rect(slide, x, cardTop, cardW, cardH, lt)
-        _add_rect(slide, x, cardTop, cardW, Inches(0.08), col)
-        title_text = item.get("title", "") if isinstance(item, dict) else str(item)
-        detail_text = item.get("detail", "") if isinstance(item, dict) else ""
-        _add_text_box(slide, Emu(x + Inches(0.15)), Emu(cardTop + Inches(0.15)),
-                      Emu(cardW - Inches(0.3)), Inches(0.4),
-                      title_text, BODY_FONT, 13, DARK, bold=True)
-        if detail_text:
-            _add_text_box(slide, Emu(x + Inches(0.15)), Emu(cardTop + Inches(0.55)),
-                          Emu(cardW - Inches(0.3)), Emu(cardH - Inches(0.65)),
-                          detail_text, BODY_FONT, 10, MID, line_spacing=14)
-
-
-def build_feature_cards(prs, c):
-    """1-2 full-width rows with an icon/image on the left and text on the right."""
-    slide = prs.slides.add_slide(prs.slide_layouts[6])
-    _header(slide, c.get("title", "Features"))
-    items = c.get("items", []); n = min(len(items), 2)
-    if n == 0: return
-    gap = Inches(0.25)
-    rowH = Emu((Inches(3.8) - (n - 1) * gap) / n)
-    iconSize = Inches(1.1)
-    for i, item in enumerate(items[:n]):
-        y = Emu(CONTENT_TOP + i * (rowH + gap))
-        col = COLORS[i % len(COLORS)]
-        lt = LIGHTS[i % len(LIGHTS)]
-        _add_rect(slide, _LM, y, _CW, rowH, lt)
-        _add_rect(slide, _LM, y, _CW, Inches(0.08), col)
-        icon_y = Emu(y + Inches(0.15) + (rowH - Inches(0.15) - iconSize) // 2)
-        icon_x = Emu(_LM + Inches(0.3))
-        img_path = item.get("imagePath", "") if isinstance(item, dict) else ""
-        shape_type = DEFAULT_ICON_SHAPES[i % len(DEFAULT_ICON_SHAPES)]
-        _add_icon_or_image(slide, img_path, icon_x, icon_y, iconSize, iconSize, shape_type, col)
-        text_x = Emu(_LM + Inches(1.7))
-        text_w = Emu(_CW - Inches(1.9))
-        title_text = item.get("title", "") if isinstance(item, dict) else str(item)
-        detail_text = item.get("detail", "") if isinstance(item, dict) else ""
-        _add_text_box(slide, text_x, Emu(y + Inches(0.2)),
-                      text_w, Inches(0.4),
-                      title_text, BODY_FONT, 14, DARK, bold=True)
-        if detail_text:
-            _add_text_box(slide, text_x, Emu(y + Inches(0.65)),
-                          text_w, Emu(rowH - Inches(0.8)),
-                          detail_text, BODY_FONT, 11, MID, line_spacing=16)
-
-
 # ============================================================
 # DISPATCH
 # ============================================================
@@ -1547,18 +1304,14 @@ BUILDERS = {
     "quote_full": build_quote_full,
     "stat_hero": build_stat_hero,
     "in_brief_featured": build_in_brief_featured,
-    "in_brief_reveal": build_in_brief_reveal,
     "persona_duo": build_persona_duo,
     "process_flow_vertical": build_process_flow_vertical,
-    "process_flow_reveal": build_process_flow_reveal,
     "text_cards": build_text_cards,
     "text_columns": build_text_columns,
     "text_narrative": build_text_narrative,
     "text_nested": build_text_nested,
     "text_split": build_text_split,
     "text_annotated": build_text_annotated,
-    "icon_cards": build_icon_cards,
-    "feature_cards": build_feature_cards,
 }
 
 

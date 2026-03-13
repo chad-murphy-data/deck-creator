@@ -100,17 +100,6 @@ def _oval(slide, x, y, w, h, fill):
     s.fill.solid(); s.fill.fore_color.rgb = fill
     s.line.fill.background(); return s
 
-DEFAULT_ICON_SHAPES = [MSO_SHAPE.OVAL, MSO_SHAPE.RECTANGLE, MSO_SHAPE.ISOSCELES_TRIANGLE]
-
-def _icon_or_image(slide, img_path, x, y, w, h, shape_type, fill_color):
-    """Add a user-supplied image or a coloured placeholder shape."""
-    if img_path and os.path.exists(img_path):
-        slide.shapes.add_picture(img_path, x, y, w, h)
-    else:
-        s = slide.shapes.add_shape(shape_type, x, y, w, h)
-        s.fill.solid(); s.fill.fore_color.rgb = fill_color
-        s.line.fill.background()
-
 def _line(slide, x, y, w, color=RULE_CLR, thickness=0.75):
     """Thin horizontal hairline rule."""
     s = slide.shapes.add_shape(MSO_SHAPE.RECTANGLE, x, y, w, Pt(thickness))
@@ -153,47 +142,8 @@ def _content_title(slide, title, size=26):
     _tb(slide, LM, Inches(0.35), CW, Inches(0.65), title,
         TITLE_FONT, size, CHARCOAL, bold=True, valign=MSO_ANCHOR.BOTTOM)
 
-def _rounded_rect(slide, x, y, w, h, fill):
-    s = slide.shapes.add_shape(MSO_SHAPE.ROUNDED_RECTANGLE, x, y, w, h)
-    s.fill.solid(); s.fill.fore_color.rgb = fill
-    s.line.fill.background()
-    pg = s._element.find('.//' + qn('a:prstGeom'))
-    if pg is not None:
-        av = pg.find(qn('a:avLst'))
-        if av is None: av = etree.SubElement(pg, qn('a:avLst'))
-        for g in av.findall(qn('a:gd')): av.remove(g)
-        g = etree.SubElement(av, qn('a:gd')); g.set('name','adj'); g.set('fmla','val 5000')
-    return s
 
-CONTENT_TOP = Inches(1.15)
-
-
-def _draw_stepper_bar(slide, labels, active_count, y):
-    """Reusable stepper bar: numbered circles + connecting lines + labels."""
-    n = len(labels)
-    cs = Inches(0.42)
-    total_w = CW
-    spacing = int(total_w / max(n - 1, 1)) if n > 1 else 0
-    start_x = LM
-    for i in range(n):
-        cx = Emu(start_x + i * spacing) if n > 1 else Emu(start_x + total_w // 2 - cs // 2)
-        active = i < active_count
-        color = ACCENTS[i % len(ACCENTS)] if active else RULE_CLR
-        _oval(slide, cx, y, cs, cs, color)
-        tc = WHITE if active else QUIET
-        _tb(slide, cx, y, cs, cs, str(i + 1), TITLE_FONT, 15, tc,
-            bold=True, align=PP_ALIGN.CENTER, valign=MSO_ANCHOR.MIDDLE)
-        lw = Inches(1.4)
-        label_x = Emu(cx - (lw - cs) // 2)
-        _tb(slide, label_x, Emu(y + cs + Inches(0.04)),
-            lw, Inches(0.25), labels[i],
-            BODY_FONT, 9, color if active else QUIET,
-            bold=active, align=PP_ALIGN.CENTER)
-        if i < n - 1:
-            line_x1 = Emu(cx + cs + Inches(0.08))
-            next_cx = Emu(start_x + (i + 1) * spacing)
-            line_x2 = Emu(next_cx - Inches(0.08))
-            _rect(slide, line_x1, Emu(y + cs // 2), Emu(line_x2 - line_x1), Inches(0.025), RULE_CLR)
+CONTENT_TOP = Inches(1.25)
 
 
 # ── Builders ─────────────────────────────────────────────
@@ -204,7 +154,7 @@ def build_title(prs, c):
     # Thin gold line as top accent
     _rect(slide, Inches(0), Inches(0), W, Inches(0.06), GOLD)
     _tb(slide, Inches(0.8), Inches(1.0), Inches(8.4), Inches(1.8),
-        c.get("title", "Title"), TITLE_FONT, 36, WHITE, bold=True,
+        c.get("title", "Title"), TITLE_FONT, 42, WHITE, bold=True,
         valign=MSO_ANCHOR.BOTTOM)
     _line(slide, Inches(0.8), Inches(2.95), Inches(2.2), GOLD, 2)
     if c.get("subtitle"):
@@ -220,9 +170,6 @@ def build_title(prs, c):
     logo = c.get("logo_path", LOGO_PATH)
     if logo and os.path.isfile(logo):
         slide.shapes.add_picture(logo, Inches(7.6), Inches(0.3), Inches(2.0))
-    img = c.get("imagePath", "")
-    if img and os.path.exists(img):
-        slide.shapes.add_picture(img, Inches(5.4), Inches(0.3), Inches(4.3), Inches(5.0))
 
 
 def build_in_brief(prs, c):
@@ -278,27 +225,14 @@ def build_stat_callout(prs, c):
     _paper_bg(slide)
     sc = _resolve_section_color(c)
     _content_title(slide, c.get("title", "Key Metric"), size=22)
-    # Visual anchor circle behind stat
-    cs = Inches(2.2)
-    cx = Emu((W - cs) // 2)
-    cy = Emu(Inches(1.5))
-    oval = slide.shapes.add_shape(MSO_SHAPE.OVAL, cx, cy, cs, cs)
-    oval_fill = oval.fill
-    oval_fill.solid()
-    r, g, b = sc[0], sc[1], sc[2]
-    light_r = min(255, r + int((255 - r) * 0.85))
-    light_g = min(255, g + int((255 - g) * 0.85))
-    light_b = min(255, b + int((255 - b) * 0.85))
-    oval_fill.fore_color.rgb = RGBColor(light_r, light_g, light_b)
-    oval.line.fill.background()
-    # Thin rule above stat (centered)
-    _line(slide, Inches(3.75), Inches(1.45), Inches(2.5), RULE_CLR, 1)
+    # Thin rule above stat
+    _line(slide, Inches(2.5), Inches(1.45), Inches(5.0), RULE_CLR, 1)
     # Big number
     _tb(slide, Inches(0.5), Inches(1.5), Inches(9), Inches(1.8),
-        c.get("stat", "—"), TITLE_FONT, 96, GOLD, bold=True,
+        c.get("stat", "—"), TITLE_FONT, 80, GOLD, bold=True,
         align=PP_ALIGN.CENTER, valign=MSO_ANCHOR.MIDDLE)
-    # Thin rule below stat (centered)
-    _line(slide, Inches(3.75), Inches(3.3), Inches(2.5), RULE_CLR, 1)
+    # Thin rule below stat
+    _line(slide, Inches(2.5), Inches(3.3), Inches(5.0), RULE_CLR, 1)
     if c.get("headline"):
         _tb(slide, Inches(1.5), Inches(3.5), Inches(7), Inches(0.6),
             c["headline"], BODY_FONT, 17, CHARCOAL, bold=True,
@@ -389,98 +323,34 @@ def build_process_flow(prs, c):
     _paper_bg(slide)
     _content_title(slide, c.get("title", "Process"), size=24)
     steps = c.get("steps", [])
-    n = min(len(steps), 5)
-    if n == 0: return
+    count = min(len(steps), 5)
+    if count == 0: return
 
-    labels = [s.get("title", f"Step {i+1}") for i, s in enumerate(steps[:n])]
-    _draw_stepper_bar(slide, labels, n, Emu(CONTENT_TOP + Inches(0.05)))
+    total_w = 8.4
+    gap_w = 0.3
+    step_w = (total_w - (count - 1) * gap_w) / count
+    startX = 0.8
+    stepY = 1.3
+    stepH = 3.8
 
-    card_top = Emu(CONTENT_TOP + Inches(0.85))
-    gap = Inches(0.2)
+    for i, step in enumerate(steps[:count]):
+        x = Inches(startX + i * (step_w + gap_w))
+        y = Inches(stepY)
+        sw = Inches(step_w)
+        sh = Inches(stepH)
+        col = ACCENTS[i % len(ACCENTS)]
 
-    if n <= 3:
-        card_w = int((CW - (n - 1) * gap) / n)
-        card_h = Inches(3.0)
-        for i, step in enumerate(steps[:n]):
-            cx = Emu(LM + i * (card_w + gap))
-            _rounded_rect(slide, cx, card_top, card_w, card_h, WHITE)
-            _rect(slide, cx, card_top, Inches(0.06), card_h, ACCENTS[i % len(ACCENTS)])
-            _tb(slide, Emu(cx + Inches(0.2)), Emu(card_top + Inches(0.15)),
-                Emu(card_w - Inches(0.4)), Inches(0.5),
-                step.get("title", ""), BODY_FONT, 13, CHARCOAL, bold=True)
-            if step.get("detail"):
-                _tb(slide, Emu(cx + Inches(0.2)), Emu(card_top + Inches(0.65)),
-                    Emu(card_w - Inches(0.4)), Emu(card_h - Inches(0.85)),
-                    step["detail"], BODY_FONT, 10, MID, line_spacing=14)
-    elif n == 4:
-        card_w = int((CW - gap) / 2)
-        card_h = Inches(1.4)
-        for i, step in enumerate(steps[:4]):
-            col = i % 2
-            row = i // 2
-            cx = Emu(LM + col * (card_w + gap))
-            cy = Emu(card_top + row * (card_h + gap))
-            _rounded_rect(slide, cx, cy, card_w, card_h, WHITE)
-            _rect(slide, cx, cy, Inches(0.06), card_h, ACCENTS[i % len(ACCENTS)])
-            _tb(slide, Emu(cx + Inches(0.2)), Emu(cy + Inches(0.1)),
-                Emu(card_w - Inches(0.4)), Inches(0.4),
-                step.get("title", ""), BODY_FONT, 12, CHARCOAL, bold=True)
-            if step.get("detail"):
-                _tb(slide, Emu(cx + Inches(0.2)), Emu(cy + Inches(0.5)),
-                    Emu(card_w - Inches(0.4)), Emu(card_h - Inches(0.65)),
-                    step["detail"], BODY_FONT, 10, MID, line_spacing=14)
-    else:
-        card_w = int((CW - 2 * gap) / 3)
-        card_h = Inches(1.35)
-        for i, step in enumerate(steps[:5]):
-            if i < 3:
-                cx = Emu(LM + i * (card_w + gap))
-                cy = card_top
-            else:
-                offset = (CW - 2 * card_w - gap) // 2
-                cx = Emu(LM + offset + (i - 3) * (card_w + gap))
-                cy = Emu(card_top + card_h + gap)
-            _rounded_rect(slide, cx, cy, card_w, card_h, WHITE)
-            _rect(slide, cx, cy, Inches(0.06), card_h, ACCENTS[i % len(ACCENTS)])
-            _tb(slide, Emu(cx + Inches(0.2)), Emu(cy + Inches(0.1)),
-                Emu(card_w - Inches(0.4)), Inches(0.35),
-                step.get("title", ""), BODY_FONT, 12, CHARCOAL, bold=True)
-            if step.get("detail"):
-                _tb(slide, Emu(cx + Inches(0.2)), Emu(cy + Inches(0.45)),
-                    Emu(card_w - Inches(0.4)), Emu(card_h - Inches(0.55)),
-                    step["detail"], BODY_FONT, 10, MID, line_spacing=14)
-
-
-def build_process_flow_reveal(prs, c):
-    """Generates N slides, one per step, with progressive stepper."""
-    steps = c.get("steps", [])
-    n = min(len(steps), 5)
-    if n == 0: return
-
-    labels = [s.get("title", f"Step {i+1}") for i, s in enumerate(steps[:n])]
-
-    for step_idx in range(n):
-        slide = prs.slides.add_slide(prs.slide_layouts[6])
-        _paper_bg(slide)
-        _content_title(slide, c.get("title", "Process"), size=24)
-
-        _draw_stepper_bar(slide, labels, step_idx + 1, Emu(CONTENT_TOP + Inches(0.05)))
-
-        card_y = Emu(CONTENT_TOP + Inches(0.85))
-        card_w = Inches(6.0)
-        card_h = Inches(3.0)
-        card_x = Emu(LM + (CW - card_w) // 2)
-
-        step = steps[step_idx]
-        _rounded_rect(slide, card_x, card_y, card_w, card_h, WHITE)
-        _rect(slide, card_x, card_y, Inches(0.08), card_h, ACCENTS[step_idx % len(ACCENTS)])
-        _tb(slide, Emu(card_x + Inches(0.25)), Emu(card_y + Inches(0.2)),
-            Emu(card_w - Inches(0.5)), Inches(0.6),
-            step.get("title", ""), BODY_FONT, 16, CHARCOAL, bold=True)
+        # Thin color line at top of column
+        _line(slide, x, y, sw, col, 2.5)
+        # Step number — large, editorial
+        _tb(slide, x, Emu(y + Inches(0.15)), sw, Inches(0.55),
+            str(i + 1), TITLE_FONT, 28, GOLD, bold=True)
+        # Step title
+        _tb(slide, x, Emu(y + Inches(0.7)), sw, Inches(0.65),
+            step.get("title", ""), BODY_FONT, 12, CHARCOAL, bold=True)
         if step.get("detail"):
-            _tb(slide, Emu(card_x + Inches(0.25)), Emu(card_y + Inches(0.85)),
-                Emu(card_w - Inches(0.5)), Emu(card_h - Inches(1.1)),
-                step["detail"], BODY_FONT, 12, MID, line_spacing=16)
+            _tb(slide, x, Emu(y + Inches(1.4)), sw, Inches(2.2),
+                step["detail"], BODY_FONT, 10, MID, line_spacing=14)
 
 
 def build_matrix(prs, c):
@@ -570,11 +440,10 @@ def build_wsn_dense(prs, c):
     slide = prs.slides.add_slide(prs.slide_layouts[6])
     _paper_bg(slide)
     _content_title(slide, c.get("title", "Key Finding"), size=24)
-    labels = c.get("labels", ["What", "So What", "Now What"])
     cols_data = [
-        (labels[0], DK_GREEN, c.get("what", {})),
-        (labels[1], COBALT, c.get("soWhat", {})),
-        (labels[2], PURPLE, c.get("nowWhat", {})),
+        ("What", DK_GREEN, c.get("what", {})),
+        ("So What", COBALT, c.get("soWhat", {})),
+        ("Now What", PURPLE, c.get("nowWhat", {})),
     ]
     colW = Inches(2.65)
     gap = Inches(0.2)
@@ -589,65 +458,73 @@ def build_wsn_dense(prs, c):
             Emu(colW - Inches(0.1)), Inches(0.3),
             label, TITLE_FONT, 13, color, bold=True)
         _tb(slide, Emu(x + Inches(0.05)), Emu(CONTENT_TOP + Inches(0.5)),
-            Emu(colW - Inches(0.1)), Inches(0.7),
+            Emu(colW - Inches(0.1)), Inches(1.1),
             data.get("headline", ""), BODY_FONT, 12, CHARCOAL, bold=True,
             line_spacing=17)
         if data.get("detail"):
-            _tb(slide, Emu(x + Inches(0.05)), Emu(CONTENT_TOP + Inches(1.25)),
+            _tb(slide, Emu(x + Inches(0.05)), Emu(CONTENT_TOP + Inches(1.65)),
                 Emu(colW - Inches(0.1)), Inches(2.0),
                 data["detail"], BODY_FONT, 10, MID, line_spacing=14)
 
 
 def build_wsn_reveal(prs, c):
-    """3 progressive slides: What -> So What -> Now What with running summary."""
-    labels = c.get("labels", ["What", "So What", "Now What"])
-    WSN_KEYS = ["what", "soWhat", "nowWhat"]
+    """Progressive 3-slide reveal: What → So What → Now What."""
     WSN_COLORS = [DK_GREEN, COBALT, PURPLE]
+    WSN_LABELS = ["What We Found", "So What", "Now What"]
+    WSN_KEYS   = ["what", "soWhat", "nowWhat"]
 
-    for step in range(3):
-        slide = prs.slides.add_slide(prs.slide_layouts[6])
+    def _hdr(slide):
         _paper_bg(slide)
         _tb(slide, LM, Inches(0.35), CW, Inches(0.55),
             c.get("title", "Key Finding"), TITLE_FONT, 26, CHARCOAL, bold=True,
             valign=MSO_ANCHOR.BOTTOM)
         _line(slide, LM, Inches(0.95), Inches(1.8), GOLD_MUTED, 1.5)
 
-        # Stepper bar at top
-        _draw_stepper_bar(slide, labels, step + 1, Emu(CONTENT_TOP + Inches(0.05)))
-
-        # Featured card for current step
-        data = c.get(WSN_KEYS[step], {})
-        card_y = Emu(CONTENT_TOP + Inches(0.85))
-        card_w = Inches(7.0)
-        card_h = Inches(2.4)
-        card_x = Emu(LM + (CW - card_w) // 2)
-
-        _line(slide, card_x, card_y, card_w, WSN_COLORS[step], 2.5)
-        _tb(slide, Emu(card_x + Inches(0.1)), Emu(card_y + Inches(0.15)),
-            Emu(card_w - Inches(0.2)), Inches(0.6),
-            data.get("headline", ""), BODY_FONT, 15, CHARCOAL, bold=True,
-            line_spacing=18)
+    def _zone(slide, x, w, label, color, data, condensed=False):
+        y = Inches(1.2)
+        h = Inches(1.9) if condensed else Inches(3.5)
+        _line(slide, x, y, w, color, 2.5)
+        _tb(slide, Emu(x + Inches(0.05)), Emu(y + Inches(0.1)),
+            Inches(2), Inches(0.3), label, TITLE_FONT,
+            11 if condensed else 13, color, bold=True)
+        _tb(slide, Emu(x + Inches(0.05)), Emu(y + Inches(0.45)),
+            Emu(w - Inches(0.1)), Inches(0.7) if condensed else Inches(1.0),
+            data.get("headline", ""), BODY_FONT,
+            11 if condensed else 13, CHARCOAL, bold=True,
+            line_spacing=16 if condensed else 18)
         if data.get("detail"):
-            _tb(slide, Emu(card_x + Inches(0.1)), Emu(card_y + Inches(0.8)),
-                Emu(card_w - Inches(0.2)), Emu(card_h - Inches(1.0)),
-                data["detail"], BODY_FONT, 12, MID, line_spacing=16)
+            detail_y = Emu(y + Inches(1.15)) if condensed else Emu(y + Inches(1.5))
+            _tb(slide, Emu(x + Inches(0.05)), detail_y,
+                Emu(w - Inches(0.1)), Inches(0.55) if condensed else Inches(1.8),
+                data["detail"], BODY_FONT,
+                9 if condensed else 11, MID, line_spacing=13 if condensed else 15)
 
-        # Running summary (only for step >= 1)
-        if step > 0:
-            summary_y = Emu(card_y + card_h + Inches(0.15))
-            # Thin divider
-            _rect(slide, LM, summary_y, Inches(3.0), Inches(0.02), RULE_CLR)
-            # Previous step summaries
-            for j in range(step):
-                iy = Emu(summary_y + Inches(0.1) + j * Inches(0.28))
-                prev_data = c.get(WSN_KEYS[j], {})
-                summary_text = prev_data.get("summary", prev_data.get("headline", ""))
-                # Small bullet square
-                _rect(slide, LM, Emu(iy + Inches(0.05)), Inches(0.08), Inches(0.08), RULE_CLR)
-                _tb(slide, Emu(LM + Inches(0.18)), iy,
-                    Emu(CW - Inches(0.18)), Inches(0.25),
-                    summary_text, BODY_FONT, 9, QUIET,
-                    valign=MSO_ANCHOR.MIDDLE)
+    # Slide 1
+    s1 = prs.slides.add_slide(prs.slide_layouts[6]); _hdr(s1)
+    _zone(s1, LM, Inches(5.5), "What We Found", DK_GREEN, c.get("what", {}))
+
+    # Slide 2
+    s2 = prs.slides.add_slide(prs.slide_layouts[6]); _hdr(s2)
+    _zone(s2, LM, Inches(4.0), "What We Found", DK_GREEN, c.get("what", {}))
+    _zone(s2, Inches(5.1), Inches(4.1), "So What", COBALT, c.get("soWhat", {}))
+
+    # Slide 3: condensed top + full-width Now What
+    s3 = prs.slides.add_slide(prs.slide_layouts[6]); _hdr(s3)
+    _zone(s3, LM, Inches(4.0), "What We Found", DK_GREEN, c.get("what", {}), True)
+    _zone(s3, Inches(5.1), Inches(4.1), "So What", COBALT, c.get("soWhat", {}), True)
+    # Now What — full width
+    nwY = Inches(3.35)
+    _line(s3, LM, nwY, CW, PURPLE, 2.5)
+    nw = c.get("nowWhat", {})
+    _tb(s3, Emu(LM + Inches(0.05)), Emu(nwY + Inches(0.1)),
+        Inches(2), Inches(0.3), "Now What", TITLE_FONT, 13, PURPLE, bold=True)
+    _tb(s3, Emu(LM + Inches(0.05)), Emu(nwY + Inches(0.45)),
+        Emu(CW - Inches(0.1)), Inches(0.6),
+        nw.get("headline", ""), BODY_FONT, 16, CHARCOAL, bold=True)
+    if nw.get("detail"):
+        _tb(s3, Emu(LM + Inches(0.05)), Emu(nwY + Inches(1.1)),
+            Emu(CW - Inches(0.1)), Inches(0.5),
+            nw["detail"], BODY_FONT, 11, MID)
 
 
 def build_findings_recs(prs, c):
@@ -694,8 +571,8 @@ def build_findings_recs_dense(prs, c):
     items = c.get("items", [])
     n = min(len(items), 8)
     avail = H - CONTENT_TOP - Inches(0.2)
-    rowH = min(int((avail - (n - 1) * Inches(0.06)) / n), Inches(0.56))
-    gap = Inches(0.06)
+    rowH = min(int((avail - (n - 1) * Inches(0.04)) / n), Inches(0.48))
+    gap = Inches(0.04)
     total = n * rowH + (n - 1) * gap
     startY = Emu(CONTENT_TOP + int((avail - total) * 0.25))
 
@@ -710,12 +587,12 @@ def build_findings_recs_dense(prs, c):
         # Finding
         _vline(slide, LM, y, rowH, DK_GREEN, 2)
         _tb(slide, Emu(LM + Inches(0.12)), y, Inches(3.8), rowH,
-            item.get("finding", ""), BODY_FONT, 10, CHARCOAL,
+            item.get("finding", ""), BODY_FONT, 9, CHARCOAL,
             valign=MSO_ANCHOR.MIDDLE)
         # Rec
         _vline(slide, Inches(5.2), y, rowH, GOLD, 2)
         _tb(slide, Inches(5.35), y, Inches(3.85), rowH,
-            item.get("recommendation", ""), BODY_FONT, 10, CHARCOAL,
+            item.get("recommendation", ""), BODY_FONT, 9, CHARCOAL,
             valign=MSO_ANCHOR.MIDDLE)
         # Separator
         if i < n - 1:
@@ -799,16 +676,21 @@ def build_progressive_reveal(prs, c):
             _tb(slide, Emu(LM + Inches(0.05)), Inches(1.8), Emu(CW - Inches(0.1)), Inches(1.3),
                 cur["detail"], BODY_FONT, 11, MID, line_spacing=15)
 
-        # Thin subtle divider
-        _rect(slide, LM, Inches(3.35), Inches(3.0), Inches(0.02), RULE_CLR)
-        # Running summary items (no header, all gray)
+        # Separator
+        _line(slide, Inches(0), Inches(3.35), W, RULE_CLR, 1)
+        _tb(slide, LM, Inches(3.45), Inches(3), Inches(0.22),
+            "Running Takeaways", BODY_FONT, 9, GOLD_MUTED, bold=True)
+
         for j in range(n + 1):
-            ty = Emu(Inches(3.45) + j * Inches(0.28))
-            _rect(slide, LM, Emu(ty + Inches(0.04)), Inches(0.08), Inches(0.08), RULE_CLR)
-            _tb(slide, Emu(LM + Inches(0.18)), ty, Emu(CW - Inches(0.18)), Inches(0.25),
+            ty = Emu(Inches(3.75) + j * Inches(0.38))
+            active = j == n
+            jcol = ACCENTS[j % len(ACCENTS)]
+            # Small square marker
+            _rect(slide, LM, Emu(ty + Inches(0.07)), Inches(0.1), Inches(0.1), jcol)
+            _tb(slide, Emu(LM + Inches(0.2)), ty, Emu(CW - Inches(0.2)), Inches(0.32),
                 takeaways[j].get("summary", takeaways[j].get("headline", "")),
-                BODY_FONT, 9, QUIET,
-                valign=MSO_ANCHOR.MIDDLE)
+                BODY_FONT, 10, CHARCOAL if active else QUIET,
+                bold=active, valign=MSO_ANCHOR.MIDDLE)
 
 
 def build_closer(prs, c):
@@ -1134,41 +1016,6 @@ def build_in_brief_featured(prs, c):
             s, BODY_FONT, 12, CHARCOAL, valign=MSO_ANCHOR.MIDDLE)
 
 
-def build_in_brief_reveal(prs, c):
-    """Spotlight reveal: each slide features one item large while others stay small."""
-    items = c.get("items", [])
-    n = min(len(items), 6)
-    if n == 0:
-        return
-
-    for k in range(n):
-        slide = prs.slides.add_slide(prs.slide_layouts[6])
-        _paper_bg(slide)
-        _content_title(slide, c.get("title", "In Brief"), size=24)
-
-        y_cursor = Emu(CONTENT_TOP + Inches(0.12))
-        for i in range(n):
-            col = ACCENTS[i % len(ACCENTS)]
-            if i == k:
-                # Featured card -- large, bold, accent rule above
-                h = Inches(1.2)
-                _line(slide, LM, y_cursor, CW, col, 2.5)
-                _tb(slide, Emu(LM + Inches(0.18)), Emu(y_cursor + Inches(0.08)),
-                    Emu(CW - Inches(0.2)), Emu(h - Inches(0.08)),
-                    items[i], BODY_FONT, 15, CHARCOAL, bold=True,
-                    valign=MSO_ANCHOR.MIDDLE, line_spacing=21)
-            else:
-                # Small row -- thin accent dot + text
-                h = Inches(0.5)
-                _rect(slide, LM, Emu(y_cursor + Inches(0.18)), Inches(0.06), Inches(0.06), col)
-                _tb(slide, Emu(LM + Inches(0.18)), y_cursor, CW, h,
-                    items[i], BODY_FONT, 11, CHARCOAL,
-                    valign=MSO_ANCHOR.MIDDLE)
-            # Extra gap around the featured card
-            gap = Inches(0.15) if i == k or (i + 1 < n and i + 1 == k) else Inches(0.08)
-            y_cursor = Emu(y_cursor + h + gap)
-
-
 def build_persona_duo(prs, c):
     """Two personas side by side for comparison."""
     slide = prs.slides.add_slide(prs.slide_layouts[6])
@@ -1397,70 +1244,6 @@ def build_text_annotated(prs, c):
             valign=MSO_ANCHOR.MIDDLE, line_spacing=16)
 
 
-def build_icon_cards(prs, c):
-    """Row of 2-3 cards, each with an icon/image above and title+detail below."""
-    slide = prs.slides.add_slide(prs.slide_layouts[6])
-    _paper_bg(slide)
-    _content_title(slide, c.get("title", "Key Points"), size=24)
-    items = c.get("items", []); n = min(len(items), 3)
-    if n == 0: return
-    gap = Inches(0.25)
-    cardW = Emu((CW - (n - 1) * gap) / n)
-    iconSize = Inches(0.8)
-    iconTop = CONTENT_TOP
-    cardTop = Emu(CONTENT_TOP + Inches(1.1))
-    cardH = Emu(Inches(3.8) - Inches(1.1))
-    for i, item in enumerate(items[:n]):
-        x = Emu(LM + i * (cardW + gap))
-        col = ACCENTS[i % len(ACCENTS)]
-        icon_x = Emu(x + (cardW - iconSize) // 2)
-        img_path = item.get("imagePath", "") if isinstance(item, dict) else ""
-        shape_type = DEFAULT_ICON_SHAPES[i % len(DEFAULT_ICON_SHAPES)]
-        _icon_or_image(slide, img_path, icon_x, iconTop, iconSize, iconSize, shape_type, col)
-        _line(slide, x, cardTop, cardW, col, 2.5)
-        title_text = item.get("title", "") if isinstance(item, dict) else str(item)
-        detail_text = item.get("detail", "") if isinstance(item, dict) else ""
-        _tb(slide, Emu(x + Inches(0.05)), Emu(cardTop + Inches(0.12)),
-            Emu(cardW - Inches(0.1)), Inches(0.4),
-            title_text, BODY_FONT, 13, CHARCOAL, bold=True)
-        if detail_text:
-            _tb(slide, Emu(x + Inches(0.05)), Emu(cardTop + Inches(0.5)),
-                Emu(cardW - Inches(0.1)), Emu(cardH - Inches(0.6)),
-                detail_text, BODY_FONT, 10, MID, line_spacing=14)
-
-
-def build_feature_cards(prs, c):
-    """1-2 full-width rows with an icon/image on the left and text on the right."""
-    slide = prs.slides.add_slide(prs.slide_layouts[6])
-    _paper_bg(slide)
-    _content_title(slide, c.get("title", "Features"), size=24)
-    items = c.get("items", []); n = min(len(items), 2)
-    if n == 0: return
-    gap = Inches(0.25)
-    rowH = Emu((Inches(3.8) - (n - 1) * gap) / n)
-    iconSize = Inches(1.1)
-    for i, item in enumerate(items[:n]):
-        y = Emu(CONTENT_TOP + i * (rowH + gap))
-        col = ACCENTS[i % len(ACCENTS)]
-        _line(slide, LM, y, CW, col, 2.5)
-        icon_y = Emu(y + Inches(0.15) + (rowH - Inches(0.15) - iconSize) // 2)
-        icon_x = Emu(LM + Inches(0.3))
-        img_path = item.get("imagePath", "") if isinstance(item, dict) else ""
-        shape_type = DEFAULT_ICON_SHAPES[i % len(DEFAULT_ICON_SHAPES)]
-        _icon_or_image(slide, img_path, icon_x, icon_y, iconSize, iconSize, shape_type, col)
-        text_x = Emu(LM + Inches(1.7))
-        text_w = Emu(CW - Inches(1.9))
-        title_text = item.get("title", "") if isinstance(item, dict) else str(item)
-        detail_text = item.get("detail", "") if isinstance(item, dict) else ""
-        _tb(slide, text_x, Emu(y + Inches(0.2)),
-            text_w, Inches(0.4),
-            title_text, BODY_FONT, 14, CHARCOAL, bold=True)
-        if detail_text:
-            _tb(slide, text_x, Emu(y + Inches(0.65)),
-                text_w, Emu(rowH - Inches(0.8)),
-                detail_text, BODY_FONT, 11, MID, line_spacing=16)
-
-
 # ── Dispatch ─────────────────────────────────────────────
 BUILDERS = {
     "title": build_title, "in_brief": build_in_brief,
@@ -1478,14 +1261,11 @@ BUILDERS = {
     "risk_tradeoff": build_risk_tradeoff, "appendix": build_appendix,
     "before_after": build_before_after, "summary": build_summary,
     "quote_full": build_quote_full, "stat_hero": build_stat_hero,
-    "in_brief_featured": build_in_brief_featured, "in_brief_reveal": build_in_brief_reveal,
-    "persona_duo": build_persona_duo,
+    "in_brief_featured": build_in_brief_featured, "persona_duo": build_persona_duo,
     "process_flow_vertical": build_process_flow_vertical,
-    "process_flow_reveal": build_process_flow_reveal,
     "text_cards": build_text_cards, "text_columns": build_text_columns,
     "text_narrative": build_text_narrative, "text_nested": build_text_nested,
     "text_split": build_text_split, "text_annotated": build_text_annotated,
-    "icon_cards": build_icon_cards, "feature_cards": build_feature_cards,
 }
 
 def build_deck(slide_configs, output_path):
