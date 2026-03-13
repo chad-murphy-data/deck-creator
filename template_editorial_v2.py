@@ -1,39 +1,54 @@
 """
-Editorial v2 — Locked-in builders
-Consolidated reference file with all approved builders so far.
+Editorial v2 — Complete template (21 builders)
+Purpose-driven slide layouts where each builder's visual treatment
+matches its rhetorical job. Not a reskin — a reimagining.
 
-LOCKED IN:
-1. build_title — dark green, gold rule, clean footer
-2. build_section_divider — dark green, breadcrumbs + hero + upcoming (takes currentSection param)
-3. build_closer — dark green, bookend with title, italic closing thought
-4. build_agenda — white, newspaper masthead, "Agenda" banner, equal-weight columns
-5. build_stat_callout — white, giant number left, context right
-6. build_quote_full — dark green, large serif italic, beat of silence
-7. build_comparison — white, row-based clean cards, warm/cool tinting
-8. build_comparison_reveal — white, 2-slide asymmetric reveal, left then right dominant
-9. build_in_brief — white, progressive reveal, each bullet gets hero treatment
+BUILDERS:
+Structural:
+  1. build_title — dark green, gold rule, clean footer
+  2. build_section_divider — dark green, breadcrumbs + hero + upcoming
+  3. build_closer — dark green, bookend with title, italic closing thought
+  4. build_agenda — white, newspaper masthead, equal-weight columns
 
-STILL TO BUILD (10 more):
-- wsn_reveal
-- process_flow
-- findings_recs
-- persona
-- text_narrative
-- timeline (using route map layout from agenda V1)
-- data_table
-- open_questions
-- summary
-- appendix
+Single-point:
+  5. build_stat_callout — white, giant number left, context right
+  6. build_quote_full — dark green, large serif italic, beat of silence
+
+Comparison:
+  7. build_comparison — white, row-based clean cards, warm/cool tinting
+  8. build_comparison_reveal — white, 2-slide asymmetric reveal
+
+Progressive:
+  9. build_in_brief — white, progressive reveal, each bullet gets hero treatment
+  10. build_wsn_reveal — 3-slide What/So What/Now What with sidebar compression
+
+Analysis:
+  11. build_findings_recs — finding→recommendation paired rows
+  12. build_process_flow — horizontal cards with colored top bars (<=4 steps)
+  13. build_process_flow_vertical — film strip bands (5+ steps)
+  14. build_process_flow_accordion — alternating left/right with center spine
+  15. build_timeline — route map with alternating stops
+
+Character/Text:
+  16. build_persona — magazine profile (single or duo), image placeholder
+  17. build_text_narrative — lede + two-column body in warm/cool cards
+
+Wrap-up:
+  18. build_open_questions — 2x2 provocation cards with watermark ?
+  19. build_data_table — styled table with highlighted column
+  20. build_summary — 2-slide reveal (sections → takeaways)
+  21. build_appendix — intentionally muted endnotes
 
 Design language:
 - White bg for content slides, DK_GREEN for structural slides (title/divider/closer)
 - Gold top rule on dark slides, DK_GREEN top rule on white slides
-- Running head: title.upper() in BODY_FONT 9pt QUIET at top-left
+- Running head: title.upper() in BODY_FONT 9pt QUIET (or 18pt for persona)
 - Fidelity Slab for titles/headlines, Fidelity Sans for body
 - Warm cards (#F0EDE6) for left/primary, Cool cards (#EAEEF0) for right/secondary
 - ACCENTS cycle for item markers (DK_GREEN, COBALT, PURPLE, GOLD, TEAL, RED, OCHRE)
 - Left-edge accent bars as primary visual markers
 - Gold for emphasis, separators, and numbers
+- Image placeholders rendered as dark tinted rectangles with "IMG" label
 """
 
 from pptx import Presentation
@@ -125,8 +140,8 @@ def _set_bg(slide, color):
 
 def _running_head(slide, title):
     _rect(slide, Inches(0), Inches(0), W, Inches(0.04), DK_GREEN)
-    _tb(slide, LM, Inches(0.25), Inches(7), Inches(0.3),
-        title.upper(), BODY_FONT, 9, QUIET, bold=True)
+    _tb(slide, LM, Inches(0.2), Inches(7), Inches(0.4),
+        title.upper(), BODY_FONT, 14, QUIET, bold=True)
 
 def _parse_item(item):
     if isinstance(item, dict):
@@ -288,8 +303,8 @@ def build_stat_callout(prs, c):
     detail = c.get("detail", ""); source = c.get("source", ""); title = c.get("title", "")
     _rect(slide, Inches(0), Inches(0), W, Inches(0.04), DK_GREEN)
     if title:
-        _tb(slide, LM, Inches(0.25), Inches(4), Inches(0.35),
-            title.upper(), BODY_FONT, 9, QUIET, bold=True)
+        _tb(slide, LM, Inches(0.2), Inches(4), Inches(0.4),
+            title.upper(), BODY_FONT, 14, QUIET, bold=True)
     _tb(slide, LM, Inches(0.6), Inches(5.2), Inches(4.0),
         stat, TITLE_FONT, 120, DK_GREEN, bold=True, valign=MSO_ANCHOR.MIDDLE)
     rx = Inches(5.8); rw = Inches(3.6)
@@ -428,11 +443,11 @@ def build_in_brief(prs, c):
         slide = prs.slides.add_slide(prs.slide_layouts[6])
         _set_bg(slide, WHITE)
         _rect(slide, Inches(0), Inches(0), W, Inches(0.04), DK_GREEN)
-        _tb(slide, LM, Inches(0.25), Inches(6), Inches(0.3),
-            title.upper(), BODY_FONT, 9, QUIET, bold=True)
+        _tb(slide, LM, Inches(0.2), Inches(6), Inches(0.4),
+            title.upper(), BODY_FONT, 14, QUIET, bold=True)
         progress = f"{active_idx + 1} of {len(bullets)}"
-        _tb(slide, Inches(8.0), Inches(0.25), Inches(1.5), Inches(0.3),
-            progress, BODY_FONT, 9, GOLD, bold=True, align=PP_ALIGN.RIGHT)
+        _tb(slide, Inches(8.0), Inches(0.2), Inches(1.5), Inches(0.4),
+            progress, BODY_FONT, 14, GOLD, bold=True, align=PP_ALIGN.RIGHT)
         bar_w = CW; bar_y = Inches(0.6)
         _rect(slide, LM, bar_y, bar_w, Inches(0.03), RULE_CLR)
         filled_w = Emu(int(bar_w) * (active_idx + 1) / len(bullets))
@@ -734,6 +749,337 @@ BUILDERS.update({
     "process_flow_vertical": build_process_flow_vertical,
     "process_flow_accordion": build_process_flow_accordion,
     "timeline": build_timeline,
+})
+
+
+# ══════════════════════════════════════════════════════════
+# BATCH 3 BUILDERS
+# ══════════════════════════════════════════════════════════
+
+
+# ══════════════════════════════════════════════════════════
+# 16. PERSONA — Magazine profile (single or duo)
+# ══════════════════════════════════════════════════════════
+def build_persona(prs, c):
+    personas = c.get("personas", None)
+    if personas and len(personas) >= 2:
+        _build_persona_duo(prs, c)
+        return
+
+    slide = prs.slides.add_slide(prs.slide_layouts[6])
+    _set_bg(slide, WHITE)
+    _rect(slide, Inches(0), Inches(0), W, Inches(0.04), DK_GREEN)
+    _tb(slide, LM, Inches(0.2), Inches(7), Inches(0.4),
+        c.get("title", "Persona").upper(), BODY_FONT, 18, QUIET, bold=True)
+
+    name = c.get("name", "")
+    archetype = c.get("archetype", "")
+    traits = c.get("traits", [])
+    detail = c.get("detail", "")
+    strategy = c.get("strategy", "")
+
+    panel_w = Inches(3.2); panel_y = Inches(0.7); panel_h = Inches(4.6)
+    _rect(slide, Inches(0.3), panel_y, panel_w, panel_h, DK_GREEN)
+    _rect(slide, Inches(0.3), panel_y, panel_w, Inches(0.05), GOLD)
+    img_size = Inches(1.3)
+    _rect(slide, Inches(0.5), Emu(panel_y + Inches(0.2)), img_size, img_size, RGBColor(0x2A, 0x5A, 0x2A))
+    _tb(slide, Inches(0.5), Emu(panel_y + Inches(0.2)), img_size, img_size,
+        "IMG", BODY_FONT, 11, RGBColor(0x3A, 0x6A, 0x3A), bold=True,
+        align=PP_ALIGN.CENTER, valign=MSO_ANCHOR.MIDDLE)
+    _tb(slide, Inches(0.5), Emu(panel_y + Inches(1.65)), Emu(panel_w - Inches(0.4)), Inches(0.5),
+        name, TITLE_FONT, 20, WHITE, bold=True, line_spacing=25)
+    if archetype:
+        _tb(slide, Inches(0.5), Emu(panel_y + Inches(2.15)), Emu(panel_w - Inches(0.4)), Inches(0.35),
+            archetype, BODY_FONT, 12, GOLD, italic=True)
+    if traits:
+        _line(slide, Inches(0.5), Emu(panel_y + Inches(2.65)), Inches(1.0), GOLD, 1)
+        for i, trait in enumerate(traits):
+            ty = Emu(panel_y + Inches(2.85) + i * Inches(0.32))
+            _tb(slide, Inches(0.5), ty, Emu(panel_w - Inches(0.4)), Inches(0.28),
+                f"\u2022  {trait}", BODY_FONT, 10, CREAM, line_spacing=13)
+    rx = Inches(3.8); rw = Inches(5.9)
+    if detail:
+        detail_h = Inches(2.2)
+        _rect(slide, rx, Inches(0.75), rw, detail_h, LIGHT_BOX)
+        _rect(slide, rx, Inches(0.75), Inches(0.06), detail_h, DK_GREEN)
+        _tb(slide, Emu(rx + Inches(0.25)), Inches(0.9), Emu(rw - Inches(0.5)), Emu(detail_h - Inches(0.3)),
+            detail, BODY_FONT, 13, CHARCOAL, line_spacing=19)
+    if strategy:
+        strat_y = Inches(3.6)
+        _rect(slide, rx, strat_y, rw, Inches(1.4), WARM_CARD)
+        _rect(slide, rx, strat_y, Inches(0.06), Inches(1.4), GOLD)
+        _tb(slide, Emu(rx + Inches(0.2)), strat_y, rw, Inches(0.3),
+            "STRATEGY", BODY_FONT, 8, GOLD, bold=True)
+        _tb(slide, Emu(rx + Inches(0.2)), Emu(strat_y + Inches(0.35)),
+            Emu(rw - Inches(0.4)), Inches(0.9),
+            strategy, BODY_FONT, 12, CHARCOAL, line_spacing=17)
+
+
+def _build_persona_duo(prs, c):
+    slide = prs.slides.add_slide(prs.slide_layouts[6])
+    _set_bg(slide, WHITE)
+    _rect(slide, Inches(0), Inches(0), W, Inches(0.04), DK_GREEN)
+    _tb(slide, LM, Inches(0.2), Inches(7), Inches(0.4),
+        c.get("title", "Personas").upper(), BODY_FONT, 18, QUIET, bold=True)
+    personas = c.get("personas", [])[:2]
+    colors = [DK_GREEN, COBALT]
+    accents = [GOLD, RGBColor(0x7A, 0xB8, 0xD4)]
+    for idx, p in enumerate(personas):
+        base_x = Inches(0.3) + idx * Inches(4.85)
+        col_w = Inches(4.55); color = colors[idx]; accent = accents[idx]
+        _rect(slide, base_x, Inches(0.7), col_w, Inches(1.5), color)
+        _rect(slide, base_x, Inches(0.7), col_w, Inches(0.04), accent)
+        name = p.get("name", "")
+        img_size = Inches(0.9)
+        darker = RGBColor(0x2A, 0x5A, 0x2A) if idx == 0 else RGBColor(0x03, 0x3A, 0x5A)
+        _rect(slide, Emu(base_x + Inches(0.15)), Inches(0.8), img_size, img_size, darker)
+        _tb(slide, Emu(base_x + Inches(0.15)), Inches(0.8), img_size, img_size,
+            "IMG", BODY_FONT, 9, RGBColor(0x3A, 0x6A, 0x3A) if idx == 0 else RGBColor(0x2A, 0x5A, 0x7A),
+            bold=True, align=PP_ALIGN.CENTER, valign=MSO_ANCHOR.MIDDLE)
+        _tb(slide, Emu(base_x + Inches(0.15)), Inches(1.4), Emu(col_w - Inches(0.3)), Inches(0.35),
+            name, TITLE_FONT, 16, WHITE, bold=True)
+        archetype = p.get("archetype", "")
+        if archetype:
+            _tb(slide, Emu(base_x + Inches(0.15)), Inches(1.75), Emu(col_w - Inches(0.3)), Inches(0.3),
+                archetype, BODY_FONT, 10, accent, italic=True)
+        traits = p.get("traits", [])
+        trait_y = Inches(2.4)
+        for i, trait in enumerate(traits):
+            ty = Emu(trait_y + i * Inches(0.28))
+            _rect(slide, Emu(base_x + Inches(0.15)), Emu(ty + Inches(0.07)),
+                  Inches(0.06), Inches(0.06), color)
+            _tb(slide, Emu(base_x + Inches(0.35)), ty, Emu(col_w - Inches(0.5)), Inches(0.25),
+                trait, BODY_FONT, 10, CHARCOAL, line_spacing=13)
+        detail = p.get("detail", "")
+        if detail:
+            detail_y = Emu(trait_y + len(traits) * Inches(0.28) + Inches(0.2))
+            _line(slide, Emu(base_x + Inches(0.15)), detail_y, Inches(1.0), RULE_CLR, 1)
+            _tb(slide, Emu(base_x + Inches(0.15)), Emu(detail_y + Inches(0.15)),
+                Emu(col_w - Inches(0.3)), Inches(1.5),
+                detail, BODY_FONT, 10, MID, line_spacing=14)
+    _rect(slide, Inches(4.97), Inches(0.7), Inches(0.015), Inches(4.5), RULE_CLR)
+
+
+# ══════════════════════════════════════════════════════════
+# 17. TEXT NARRATIVE — Magazine article (lede + two-column body)
+# ══════════════════════════════════════════════════════════
+def build_text_narrative(prs, c):
+    slide = prs.slides.add_slide(prs.slide_layouts[6])
+    _set_bg(slide, WHITE)
+    title = c.get("title", ""); lede = c.get("lede", ""); body = c.get("body", "")
+    _running_head(slide, title)
+    _tb(slide, Inches(0.5), Inches(0.7), Inches(9.0), Inches(1.2),
+        lede, TITLE_FONT, 22, BLACK, bold=True, line_spacing=30)
+    _line(slide, Inches(0.5), Inches(2.0), Inches(2.5), GOLD, 3)
+    if isinstance(body, list): body_text = "\n\n".join(body)
+    else: body_text = body
+    mid = len(body_text) // 2
+    split_at = body_text.find('. ', mid)
+    if split_at == -1 or split_at > mid + 100: split_at = mid
+    else: split_at += 2
+    col1 = body_text[:split_at].strip(); col2 = body_text[split_at:].strip()
+    col_w = Inches(4.2); col_gap = Inches(0.3); body_y = Inches(2.25); col_h = Inches(3.0)
+    _rect(slide, Inches(0.5), body_y, col_w, col_h, WARM_CARD)
+    _rect(slide, Inches(0.5), body_y, col_w, Inches(0.05), DK_GREEN)
+    _tb(slide, Inches(0.7), Emu(body_y + Inches(0.2)), Emu(col_w - Inches(0.4)), Emu(col_h - Inches(0.3)),
+        col1, BODY_FONT, 12, CHARCOAL, line_spacing=17)
+    col2_x = Emu(Inches(0.5) + col_w + col_gap)
+    _rect(slide, col2_x, body_y, col_w, col_h, COOL_CARD)
+    _rect(slide, col2_x, body_y, col_w, Inches(0.05), COBALT)
+    _tb(slide, Emu(col2_x + Inches(0.2)), Emu(body_y + Inches(0.2)), Emu(col_w - Inches(0.4)), Emu(col_h - Inches(0.3)),
+        col2, BODY_FONT, 12, CHARCOAL, line_spacing=17)
+
+
+# ══════════════════════════════════════════════════════════
+# 18. OPEN QUESTIONS — Provocation cards (2x2)
+# ══════════════════════════════════════════════════════════
+def build_open_questions(prs, c):
+    slide = prs.slides.add_slide(prs.slide_layouts[6])
+    _set_bg(slide, WHITE)
+    title = c.get("title", ""); questions = c.get("questions", [])
+    n = min(len(questions), 4)
+    _rect(slide, Inches(0), Inches(0), W, Inches(0.04), DK_GREEN)
+    _tb(slide, Inches(0.5), Inches(0.25), Inches(8), Inches(0.55),
+        title, TITLE_FONT, 22, CHARCOAL, bold=True)
+    if n == 0: return
+    cols = 2; rows = (n + 1) // 2
+    gap_x = Inches(0.25); gap_y = Inches(0.2)
+    total_w = Inches(9.0); total_h = Inches(3.7)
+    card_w = Emu((total_w - (cols - 1) * gap_x) / cols)
+    card_h = Emu((total_h - (rows - 1) * gap_y) / rows)
+    start_x = Inches(0.5); start_y = Inches(1.0)
+    for i, q in enumerate(questions[:n]):
+        if isinstance(q, dict): q_text = q.get("text", q.get("question", str(q)))
+        else: q_text = str(q)
+        col = i % cols; row = i // cols
+        color = ACCENTS[i % len(ACCENTS)]
+        x = Emu(start_x + col * (card_w + gap_x)); y = Emu(start_y + row * (card_h + gap_y))
+        _rect(slide, x, y, card_w, card_h, LIGHT_BOX)
+        _rect(slide, x, y, card_w, Inches(0.05), color)
+        _tb(slide, Emu(x + card_w - Inches(1.0)), y, Inches(1.0), card_h,
+            "?", TITLE_FONT, 80, FAINT, bold=True, align=PP_ALIGN.RIGHT, valign=MSO_ANCHOR.BOTTOM)
+        _tb(slide, Emu(x + Inches(0.2)), Emu(y + Inches(0.15)), Inches(0.4), Inches(0.4),
+            str(i + 1), TITLE_FONT, 22, color, bold=True)
+        _tb(slide, Emu(x + Inches(0.2)), Emu(y + Inches(0.6)),
+            Emu(card_w - Inches(0.5)), Emu(card_h - Inches(0.8)),
+            q_text, BODY_FONT, 13, CHARCOAL, line_spacing=18)
+
+
+# ══════════════════════════════════════════════════════════
+# 19. DATA TABLE
+# ══════════════════════════════════════════════════════════
+def build_data_table(prs, c):
+    slide = prs.slides.add_slide(prs.slide_layouts[6])
+    _set_bg(slide, WHITE)
+    title = c.get("title", ""); headers = c.get("headers", [])
+    rows = c.get("rows", []); note = c.get("note", "")
+    highlight_col = c.get("highlightCol", -1)
+    _rect(slide, Inches(0), Inches(0), W, Inches(0.04), DK_GREEN)
+    _tb(slide, Inches(0.5), Inches(0.25), Inches(8), Inches(0.55),
+        title, TITLE_FONT, 22, CHARCOAL, bold=True)
+    if not headers: return
+    n_cols = len(headers); n_rows = len(rows)
+    table_x = Inches(0.5); table_w = Inches(9.0)
+    col_w = Emu(table_w / n_cols); header_h = Inches(0.5)
+    row_h = Inches(0.5); start_y = Inches(1.0)
+    for j, h in enumerate(headers):
+        hx = Emu(table_x + j * col_w)
+        _rect(slide, hx, start_y, col_w, header_h, DK_GREEN)
+        _tb(slide, Emu(hx + Inches(0.12)), start_y, Emu(col_w - Inches(0.24)), header_h,
+            h, BODY_FONT, 11, WHITE, bold=True, valign=MSO_ANCHOR.MIDDLE)
+    for i, row in enumerate(rows):
+        ry = Emu(start_y + header_h + i * row_h)
+        for j, cell in enumerate(row):
+            cx = Emu(table_x + j * col_w)
+            if j == highlight_col: bg = WARM_CARD
+            elif i % 2 == 0: bg = LIGHT_BOX
+            else: bg = WHITE
+            _rect(slide, cx, ry, col_w, row_h, bg)
+            is_hl = (j == highlight_col)
+            _tb(slide, Emu(cx + Inches(0.12)), ry, Emu(col_w - Inches(0.24)), row_h,
+                str(cell), BODY_FONT, 11, DK_GREEN if is_hl else CHARCOAL,
+                bold=is_hl, valign=MSO_ANCHOR.MIDDLE)
+    bottom_y = Emu(start_y + header_h + n_rows * row_h)
+    _line(slide, table_x, bottom_y, table_w, CHARCOAL, 1)
+    if note:
+        _tb(slide, table_x, Emu(bottom_y + Inches(0.15)), Inches(8), Inches(0.3),
+            note, BODY_FONT, 8, QUIET, italic=True)
+
+
+# ══════════════════════════════════════════════════════════
+# 20. SUMMARY — 2-slide reveal (sections → takeaways)
+# ══════════════════════════════════════════════════════════
+def build_summary(prs, c):
+    title = c.get("title", ""); heading = c.get("heading", "")
+    sections = c.get("sections", []); points = c.get("points", [])
+    n_sec = len(sections)
+    # Slide 1: Sections dominant
+    slide1 = prs.slides.add_slide(prs.slide_layouts[6])
+    _set_bg(slide1, WHITE)
+    _rect(slide1, Inches(0), Inches(0), W, Inches(0.04), DK_GREEN)
+    _tb(slide1, Inches(0.5), Inches(0.25), Inches(8), Inches(0.55),
+        title, TITLE_FONT, 22, BLACK, bold=True)
+    if heading:
+        _tb(slide1, Inches(0.5), Inches(0.8), Inches(8), Inches(0.3),
+            heading, BODY_FONT, 12, MID, italic=True)
+    if n_sec > 0:
+        sec_y = Inches(1.25); gap = Inches(0.2)
+        sec_w = Emu((Inches(9.0) - (n_sec - 1) * gap) / n_sec); sec_h = Inches(2.5)
+        for i, sec in enumerate(sections):
+            x = Emu(Inches(0.5) + i * (sec_w + gap)); color = ACCENTS[i % len(ACCENTS)]
+            _rect(slide1, x, sec_y, sec_w, sec_h, LIGHT_BOX)
+            _rect(slide1, x, sec_y, sec_w, Inches(0.05), color)
+            _tb(slide1, Emu(x + Inches(0.15)), Emu(sec_y + Inches(0.15)),
+                Emu(sec_w - Inches(0.3)), Inches(0.4),
+                sec.get("heading", ""), TITLE_FONT, 14, color, bold=True, line_spacing=17)
+            for j, pt in enumerate(sec.get("points", [])):
+                py = Emu(sec_y + Inches(0.65) + j * Inches(0.5))
+                _rect(slide1, Emu(x + Inches(0.15)), Emu(py + Inches(0.05)),
+                      Inches(0.06), Inches(0.06), color)
+                _tb(slide1, Emu(x + Inches(0.3)), py,
+                    Emu(sec_w - Inches(0.45)), Inches(0.45),
+                    pt, BODY_FONT, 11, CHARCOAL, line_spacing=14)
+    if points:
+        tease_y = Inches(4.05)
+        _rect(slide1, Inches(0.3), tease_y, Inches(9.4), Inches(1.2), WARM_CARD)
+        _rect(slide1, Inches(0.3), tease_y, Inches(0.04), Inches(1.2), FAINT)
+        _tb(slide1, Inches(0.5), Emu(tease_y + Inches(0.08)), Inches(3), Inches(0.2),
+            "KEY TAKEAWAYS", BODY_FONT, 8, QUIET, bold=True)
+        for i, pt in enumerate(points):
+            short = pt if len(pt) <= 70 else pt[:67] + "..."
+            py = Emu(tease_y + Inches(0.32) + i * Inches(0.2))
+            _tb(slide1, Inches(0.5), py, Inches(8.5), Inches(0.2),
+                f"{i+1}.  {short}", BODY_FONT, 9, QUIET, line_spacing=11)
+    # Slide 2: Takeaways dominant
+    slide2 = prs.slides.add_slide(prs.slide_layouts[6])
+    _set_bg(slide2, WHITE)
+    _rect(slide2, Inches(0), Inches(0), W, Inches(0.04), DK_GREEN)
+    _tb(slide2, Inches(0.5), Inches(0.25), Inches(8), Inches(0.55),
+        title, TITLE_FONT, 22, BLACK, bold=True)
+    if n_sec > 0:
+        comp_y = Inches(0.95); comp_h = Inches(0.9)
+        _rect(slide2, Inches(0.3), comp_y, Inches(9.4), comp_h, LIGHT_BOX)
+        comp_gap = Inches(0.15)
+        comp_item_w = Emu((Inches(9.0) - (n_sec - 1) * comp_gap) / n_sec)
+        for i, sec in enumerate(sections):
+            cx = Emu(Inches(0.5) + i * (comp_item_w + comp_gap)); color = ACCENTS[i % len(ACCENTS)]
+            _rect(slide2, cx, comp_y, Inches(0.04), comp_h, color)
+            _tb(slide2, Emu(cx + Inches(0.15)), comp_y, Emu(comp_item_w - Inches(0.2)), comp_h,
+                sec.get("heading", ""), BODY_FONT, 10, QUIET, bold=True, valign=MSO_ANCHOR.MIDDLE)
+    if points:
+        take_y = Inches(2.1)
+        _rect(slide2, Inches(0.3), take_y, Inches(9.4), Inches(0.04), DK_GREEN)
+        _tb(slide2, Inches(0.5), Emu(take_y + Inches(0.12)), Inches(3), Inches(0.25),
+            "KEY TAKEAWAYS", BODY_FONT, 9, DK_GREEN, bold=True)
+        n_pts = len(points); cols = 2
+        pt_gap_x = Inches(0.2); pt_gap_y = Inches(0.12)
+        pt_w = Emu((Inches(9.0) - (cols - 1) * pt_gap_x) / cols)
+        pt_h = Inches(0.7); pt_start_y = Inches(2.5)
+        for i, pt in enumerate(points):
+            col = i % cols; row = i // cols; color = ACCENTS[i % len(ACCENTS)]
+            px = Emu(Inches(0.5) + col * (pt_w + pt_gap_x))
+            py = Emu(pt_start_y + row * (pt_h + pt_gap_y))
+            _rect(slide2, px, py, pt_w, pt_h, WARM_CARD)
+            _rect(slide2, px, py, Inches(0.05), pt_h, color)
+            _tb(slide2, Emu(px + Inches(0.2)), py, Emu(pt_w - Inches(0.35)), pt_h,
+                pt, BODY_FONT, 12, CHARCOAL, valign=MSO_ANCHOR.MIDDLE, line_spacing=16)
+
+
+# ══════════════════════════════════════════════════════════
+# 21. APPENDIX — Intentionally muted endnotes
+# ══════════════════════════════════════════════════════════
+def build_appendix(prs, c):
+    slide = prs.slides.add_slide(prs.slide_layouts[6])
+    _set_bg(slide, WHITE)
+    title = c.get("title", "Appendix"); label = c.get("label", "")
+    sections = c.get("sections", [])
+    _tb(slide, Inches(0.5), Inches(0.2), Inches(8), Inches(0.4),
+        title, TITLE_FONT, 18, QUIET, bold=True)
+    if label:
+        _tb(slide, Inches(0.5), Inches(0.6), Inches(3), Inches(0.25),
+            label, BODY_FONT, 9, FAINT, bold=True)
+    _line(slide, Inches(0.5), Inches(0.9), Inches(2.0), RULE_CLR, 1)
+    start_y = Inches(1.1); content_x = Inches(2.5); content_w = Inches(7.0)
+    for i, sec in enumerate(sections):
+        sec_label = sec.get("label", sec.get("heading", ""))
+        sec_content = sec.get("content", "")
+        y = Emu(start_y + i * Inches(1.2))
+        _tb(slide, Inches(0.5), y, Inches(1.8), Inches(0.3),
+            sec_label, BODY_FONT, 10, QUIET, bold=True)
+        _line(slide, Inches(0.5), Emu(y + Inches(0.3)), Inches(1.5), RULE_CLR, 1)
+        _tb(slide, content_x, y, content_w, Inches(1.0),
+            sec_content, BODY_FONT, 10, MID, line_spacing=14)
+
+
+# Update BUILDERS with batch 3
+BUILDERS.update({
+    "persona": build_persona,
+    "persona_duo": build_persona,  # same builder handles both
+    "text_narrative": build_text_narrative,
+    "open_questions": build_open_questions,
+    "data_table": build_data_table,
+    "summary": build_summary,
+    "appendix": build_appendix,
 })
 
 
