@@ -10,6 +10,7 @@ import template_colorful
 import template_bold
 import template_editorial
 import template_noir
+import template_editorial_v2
 
 app = Flask(__name__)
 
@@ -24,6 +25,7 @@ TEMPLATES = {
     "bold": template_bold,
     "editorial": template_editorial,
     "noir": template_noir,
+    "editorial_v2": template_editorial_v2,
 }
 
 

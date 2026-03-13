@@ -948,6 +948,25 @@ main {
     background: #044014;
 }
 
+/* Theme: Editorial v2 */
+
+.theme-editorial_v2 .preview-slide {
+    background: #fff;
+    font-family: "Georgia", serif;
+}
+
+.theme-editorial_v2 .pv-accent-bar {
+    background: #044014;
+}
+
+.theme-editorial_v2 .pv-title {
+    font-family: "Georgia", serif;
+}
+
+.theme-editorial_v2 .pv-title-rule {
+    background: #044014;
+}
+
 /* ---------- 10. Filmstrip ---------- */
 
 .filmstrip-header {

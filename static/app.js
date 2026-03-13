@@ -72,6 +72,7 @@ function renderSetup() {
         { id: "bold", label: "Bold", desc: "Dark titles, warm gray content, bold geometric accents." },
         { id: "editorial", label: "Editorial", desc: "Serif headlines, warm paper background, refined and restrained." },
         { id: "noir", label: "Noir", desc: "Full dark mode, vivid electric accents, commanding presence." },
+        { id: "editorial_v2", label: "Editorial v2", desc: "Purpose-driven layouts, progressive reveals, magazine design language." },
     ];
     picker.innerHTML = systems.map(ds => {
         const sel = state.designSystem === ds.id ? " selected" : "";

@@ -47,6 +47,13 @@ const SECTION_COLOR_OPTIONS = {
         { value: "cobalt", label: "Cobalt", hex: "#04547C" },
         { value: "gold", label: "Gold", hex: "#D4A843" },
     ],
+    editorial_v2: [
+        { value: "green", label: "Green", hex: "#044014" },
+        { value: "cobalt", label: "Cobalt", hex: "#04547C" },
+        { value: "purple", label: "Purple", hex: "#5B2C8F" },
+        { value: "gold", label: "Gold", hex: "#D4A843" },
+        { value: "teal", label: "Teal", hex: "#1B7A6E" },
+    ],
 };
 
 const SLIDE_SCHEMAS = {
@@ -725,6 +732,40 @@ const SLIDE_SCHEMAS = {
                 subfields: [
                     { key: "label", label: "Label/Tag", type: "text", default: "" },
                     { key: "text", label: "Description", type: "textarea", default: "" },
+                ]
+            },
+        ]
+    },
+    icon_cards: {
+        label: "Icon Cards",
+        description: "Row of cards with icons/images above each.",
+        category: "content",
+        fields: [
+            { key: "title", label: "Slide Title", type: "text", default: "Key Points" },
+            {
+                key: "items", label: "Cards", type: "repeating",
+                minItems: 2, maxItems: 3, startItems: 3,
+                subfields: [
+                    { key: "title", label: "Card Title", type: "text", default: "" },
+                    { key: "detail", label: "Detail", type: "textarea", default: "" },
+                    { key: "imagePath", label: "Image", type: "text", default: "" },
+                ]
+            },
+        ]
+    },
+    feature_cards: {
+        label: "Feature Cards",
+        description: "Stacked rows with image on the left and text on the right.",
+        category: "content",
+        fields: [
+            { key: "title", label: "Slide Title", type: "text", default: "Features" },
+            {
+                key: "items", label: "Features", type: "repeating",
+                minItems: 1, maxItems: 2, startItems: 2,
+                subfields: [
+                    { key: "title", label: "Feature Title", type: "text", default: "" },
+                    { key: "detail", label: "Detail", type: "textarea", default: "" },
+                    { key: "imagePath", label: "Image", type: "text", default: "" },
                 ]
             },
         ]

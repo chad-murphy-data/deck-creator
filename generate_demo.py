@@ -1,5 +1,5 @@
 """Generate a comprehensive demo deck showcasing all slide types."""
-import template_bold
+import template_slick
 import os
 
 slides = [
@@ -357,7 +357,19 @@ slides = [
         "sectionColor": "green"
     }),
 
-    # 30. PERSONA_DUO
+    # 30. IN_BRIEF_REVEAL
+    ("in_brief_reveal", {
+        "title": "Schell\u2019s Four Pillars of Experience",
+        "items": [
+            "Mechanics \u2014 the rules and systems that create the possibility space",
+            "Story \u2014 the narrative arc that gives meaning to the player\u2019s actions",
+            "Aesthetics \u2014 the sensory experience that sets tone and emotion",
+            "Technology \u2014 the platform that determines what\u2019s possible",
+        ],
+        "sectionColor": "purple"
+    }),
+
+    # 31. PERSONA_DUO
     ("persona_duo", {
         "title": "Two Types of Audience",
         "personas": [
@@ -462,9 +474,30 @@ slides = [
         "contact": "Inspired by Jesse Schell, The Art of Game Design",
         "sectionColor": "green"
     }),
+
+    # 40. ICON_CARDS
+    ("icon_cards", {
+        "title": "Core Design Pillars",
+        "items": [
+            {"title": "Mechanics", "detail": "The rules, systems, and interactions that create the possibility space for play."},
+            {"title": "Story", "detail": "The narrative arc that gives meaning and emotional weight to the player\u2019s journey."},
+            {"title": "Aesthetics", "detail": "The sensory experience \u2014 visuals, sound, feel \u2014 that sets tone and mood."},
+        ],
+        "sectionColor": "purple"
+    }),
+
+    # 41. FEATURE_CARDS
+    ("feature_cards", {
+        "title": "Key Takeaways",
+        "items": [
+            {"title": "Think in Lenses", "detail": "Every design decision can be examined from multiple perspectives. Rotate lenses to find blind spots and uncover hidden opportunities."},
+            {"title": "Design for Agency", "detail": "Let your audience discover meaning rather than simply delivering it. Create possibility spaces that reward curiosity and exploration."},
+        ],
+        "sectionColor": "blue"
+    }),
 ]
 
-out = os.path.join("output", "storytelling_video_games_bold.pptx")
-template_bold.build_deck(slides, out)
+out = os.path.join("output", "storytelling_video_games_slick_v6.pptx")
+template_slick.build_deck(slides, out)
 print(f"Generated: {os.path.getsize(out):,} bytes, {len(slides)} slides")
 print(f"Output: {os.path.abspath(out)}")

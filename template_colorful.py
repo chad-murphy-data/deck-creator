@@ -62,6 +62,17 @@ def _add_oval(slide, x, y, w, h, fill_color):
     shape.line.fill.background()
     return shape
 
+DEFAULT_ICON_SHAPES = [MSO_SHAPE.OVAL, MSO_SHAPE.RECTANGLE, MSO_SHAPE.ISOSCELES_TRIANGLE]
+
+def _add_icon_or_image(slide, img_path, x, y, w, h, shape_type, fill_color):
+    """Add a user-supplied image or a coloured placeholder shape."""
+    if img_path and os.path.exists(img_path):
+        slide.shapes.add_picture(img_path, x, y, w, h)
+    else:
+        s = slide.shapes.add_shape(shape_type, x, y, w, h)
+        s.fill.solid(); s.fill.fore_color.rgb = fill_color
+        s.line.fill.background()
+
 
 def _font_fallback(font_name):
     """Return (primary, fallback) for a font name."""
@@ -1145,7 +1156,7 @@ def build_in_brief_reveal(prs, c):
         slide = prs.slides.add_slide(prs.slide_layouts[6])
         _header(slide, c.get("title", "In Brief"))
 
-        y_cursor = CONTENT_TOP
+        y_cursor = Emu(CONTENT_TOP + Inches(0.12))
         for i in range(n):
             col = COLORS[i % len(COLORS)]
             lt = LIGHTS[i % len(LIGHTS)]
@@ -1161,15 +1172,15 @@ def build_in_brief_reveal(prs, c):
             else:
                 # Small row
                 h = Inches(0.5)
-                card_bg = lt if i < k else OFF_WHITE
-                _add_rect(slide, _LM, y_cursor, _CW, h, card_bg)
+                _add_rect(slide, _LM, y_cursor, _CW, h, OFF_WHITE)
                 _add_rect(slide, _LM, y_cursor, Inches(0.06), h, col)
-                text_color = MID if i < k else DARK
                 _add_text_box(slide, Emu(_LM + Inches(0.18)), y_cursor,
                               Emu(_CW - Inches(0.4)), h,
-                              items[i], BODY_FONT, 11, text_color,
+                              items[i], BODY_FONT, 11, DARK,
                               valign=MSO_ANCHOR.MIDDLE)
-            y_cursor = Emu(y_cursor + h + Inches(0.08))
+            # Extra gap around the featured card
+            gap = Inches(0.15) if i == k or (i + 1 < n and i + 1 == k) else Inches(0.08)
+            y_cursor = Emu(y_cursor + h + gap)
 
 
 def build_persona_duo(prs, c):
@@ -1436,6 +1447,72 @@ def build_text_annotated(prs, c):
                       valign=MSO_ANCHOR.MIDDLE, line_spacing=16)
 
 
+def build_icon_cards(prs, c):
+    """Row of 2-3 cards, each with an icon/image above and title+detail below."""
+    slide = prs.slides.add_slide(prs.slide_layouts[6])
+    _header(slide, c.get("title", "Key Points"))
+    items = c.get("items", []); n = min(len(items), 3)
+    if n == 0: return
+    gap = Inches(0.25)
+    cardW = Emu((_CW - (n - 1) * gap) / n)
+    iconSize = Inches(0.8)
+    iconTop = CONTENT_TOP
+    cardTop = Emu(CONTENT_TOP + Inches(1.1))
+    cardH = Emu(Inches(3.8) - Inches(1.1))
+    for i, item in enumerate(items[:n]):
+        x = Emu(_LM + i * (cardW + gap))
+        col = COLORS[i % len(COLORS)]
+        lt = LIGHTS[i % len(LIGHTS)]
+        icon_x = Emu(x + (cardW - iconSize) // 2)
+        img_path = item.get("imagePath", "") if isinstance(item, dict) else ""
+        shape_type = DEFAULT_ICON_SHAPES[i % len(DEFAULT_ICON_SHAPES)]
+        _add_icon_or_image(slide, img_path, icon_x, iconTop, iconSize, iconSize, shape_type, col)
+        _add_rect(slide, x, cardTop, cardW, cardH, lt)
+        _add_rect(slide, x, cardTop, cardW, Inches(0.08), col)
+        title_text = item.get("title", "") if isinstance(item, dict) else str(item)
+        detail_text = item.get("detail", "") if isinstance(item, dict) else ""
+        _add_text_box(slide, Emu(x + Inches(0.15)), Emu(cardTop + Inches(0.15)),
+                      Emu(cardW - Inches(0.3)), Inches(0.4),
+                      title_text, BODY_FONT, 13, DARK, bold=True)
+        if detail_text:
+            _add_text_box(slide, Emu(x + Inches(0.15)), Emu(cardTop + Inches(0.55)),
+                          Emu(cardW - Inches(0.3)), Emu(cardH - Inches(0.65)),
+                          detail_text, BODY_FONT, 10, MID, line_spacing=14)
+
+
+def build_feature_cards(prs, c):
+    """1-2 full-width rows with an icon/image on the left and text on the right."""
+    slide = prs.slides.add_slide(prs.slide_layouts[6])
+    _header(slide, c.get("title", "Features"))
+    items = c.get("items", []); n = min(len(items), 2)
+    if n == 0: return
+    gap = Inches(0.25)
+    rowH = Emu((Inches(3.8) - (n - 1) * gap) / n)
+    iconSize = Inches(1.1)
+    for i, item in enumerate(items[:n]):
+        y = Emu(CONTENT_TOP + i * (rowH + gap))
+        col = COLORS[i % len(COLORS)]
+        lt = LIGHTS[i % len(LIGHTS)]
+        _add_rect(slide, _LM, y, _CW, rowH, lt)
+        _add_rect(slide, _LM, y, _CW, Inches(0.08), col)
+        icon_y = Emu(y + Inches(0.15) + (rowH - Inches(0.15) - iconSize) // 2)
+        icon_x = Emu(_LM + Inches(0.3))
+        img_path = item.get("imagePath", "") if isinstance(item, dict) else ""
+        shape_type = DEFAULT_ICON_SHAPES[i % len(DEFAULT_ICON_SHAPES)]
+        _add_icon_or_image(slide, img_path, icon_x, icon_y, iconSize, iconSize, shape_type, col)
+        text_x = Emu(_LM + Inches(1.7))
+        text_w = Emu(_CW - Inches(1.9))
+        title_text = item.get("title", "") if isinstance(item, dict) else str(item)
+        detail_text = item.get("detail", "") if isinstance(item, dict) else ""
+        _add_text_box(slide, text_x, Emu(y + Inches(0.2)),
+                      text_w, Inches(0.4),
+                      title_text, BODY_FONT, 14, DARK, bold=True)
+        if detail_text:
+            _add_text_box(slide, text_x, Emu(y + Inches(0.65)),
+                          text_w, Emu(rowH - Inches(0.8)),
+                          detail_text, BODY_FONT, 11, MID, line_spacing=16)
+
+
 # ============================================================
 # DISPATCH
 # ============================================================
@@ -1480,6 +1557,8 @@ BUILDERS = {
     "text_nested": build_text_nested,
     "text_split": build_text_split,
     "text_annotated": build_text_annotated,
+    "icon_cards": build_icon_cards,
+    "feature_cards": build_feature_cards,
 }
 
 

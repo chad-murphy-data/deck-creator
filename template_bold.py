@@ -94,6 +94,17 @@ def _oval(slide, x, y, w, h, fill):
     s.fill.solid(); s.fill.fore_color.rgb = fill
     s.line.fill.background(); return s
 
+DEFAULT_ICON_SHAPES = [MSO_SHAPE.OVAL, MSO_SHAPE.RECTANGLE, MSO_SHAPE.ISOSCELES_TRIANGLE]
+
+def _icon_or_image(slide, img_path, x, y, w, h, shape_type, fill_color):
+    """Add a user-supplied image or a coloured placeholder shape."""
+    if img_path and os.path.exists(img_path):
+        slide.shapes.add_picture(img_path, x, y, w, h)
+    else:
+        s = slide.shapes.add_shape(shape_type, x, y, w, h)
+        s.fill.solid(); s.fill.fore_color.rgb = fill_color
+        s.line.fill.background()
+
 def _tb(slide, x, y, w, h, text, font=None, size=12, color=None,
         bold=False, italic=False, align=PP_ALIGN.LEFT, valign=MSO_ANCHOR.TOP,
         line_spacing=None):
@@ -1088,7 +1099,7 @@ def build_in_brief_reveal(prs, c):
         _warm_bg(slide); _edge_column(slide)
         _content_title(slide, c.get("title", "In Brief"), size=24)
 
-        y_cursor = CONTENT_TOP
+        y_cursor = Emu(CONTENT_TOP + Inches(0.12))
         for i in range(n):
             col = ACCENTS[i % len(ACCENTS)]
             if i == k:
@@ -1104,11 +1115,12 @@ def build_in_brief_reveal(prs, c):
                 h = Inches(0.5)
                 _rect(slide, LM, y_cursor, Inches(8.2), h, CARD_BG)
                 _rect(slide, LM, y_cursor, Inches(0.06), h, col)
-                text_color = MID_TEXT if i < k else DARK_TEXT
                 _tb(slide, Emu(LM + Inches(0.18)), y_cursor, Inches(7.8), h,
-                    items[i], BODY_FONT, 11, text_color,
+                    items[i], BODY_FONT, 11, DARK_TEXT,
                     valign=MSO_ANCHOR.MIDDLE)
-            y_cursor = Emu(y_cursor + h + Inches(0.08))
+            # Extra gap around the featured card
+            gap = Inches(0.15) if i == k or (i + 1 < n and i + 1 == k) else Inches(0.08)
+            y_cursor = Emu(y_cursor + h + gap)
 
 
 def build_persona_duo(prs, c):
@@ -1320,6 +1332,72 @@ def build_text_annotated(prs, c):
             valign=MSO_ANCHOR.MIDDLE, line_spacing=16)
 
 
+def build_icon_cards(prs, c):
+    """Row of 2-3 cards, each with an icon/image above and title+detail below."""
+    slide = prs.slides.add_slide(prs.slide_layouts[6])
+    _warm_bg(slide); _edge_column(slide)
+    _content_title(slide, c.get("title", "Key Points"), size=24)
+    items = c.get("items", []); n = min(len(items), 3)
+    if n == 0: return
+    gap = Inches(0.25)
+    totalW = Inches(8.2)
+    cardW = Emu((totalW - (n - 1) * gap) / n)
+    iconSize = Inches(0.8)
+    iconTop = CONTENT_TOP
+    cardTop = Emu(CONTENT_TOP + Inches(1.1))
+    cardH = Emu(Inches(3.8) - Inches(1.1))
+    for i, item in enumerate(items[:n]):
+        x = Emu(LM + i * (cardW + gap))
+        col = ACCENTS[i % len(ACCENTS)]
+        icon_x = Emu(x + (cardW - iconSize) // 2)
+        img_path = item.get("imagePath", "") if isinstance(item, dict) else ""
+        shape_type = DEFAULT_ICON_SHAPES[i % len(DEFAULT_ICON_SHAPES)]
+        _icon_or_image(slide, img_path, icon_x, iconTop, iconSize, iconSize, shape_type, col)
+        _rect(slide, x, cardTop, cardW, cardH, CARD_BG)
+        title_text = item.get("title", "") if isinstance(item, dict) else str(item)
+        detail_text = item.get("detail", "") if isinstance(item, dict) else ""
+        _tb(slide, Emu(x + Inches(0.15)), Emu(cardTop + Inches(0.12)),
+            Emu(cardW - Inches(0.3)), Inches(0.4),
+            title_text, BODY_FONT, 13, DARK_TEXT, bold=True)
+        if detail_text:
+            _tb(slide, Emu(x + Inches(0.15)), Emu(cardTop + Inches(0.5)),
+                Emu(cardW - Inches(0.3)), Emu(cardH - Inches(0.6)),
+                detail_text, BODY_FONT, 10, MID_TEXT, line_spacing=14)
+
+
+def build_feature_cards(prs, c):
+    """1-2 full-width rows with an icon/image on the left and text on the right."""
+    slide = prs.slides.add_slide(prs.slide_layouts[6])
+    _warm_bg(slide); _edge_column(slide)
+    _content_title(slide, c.get("title", "Features"), size=24)
+    items = c.get("items", []); n = min(len(items), 2)
+    if n == 0: return
+    gap = Inches(0.25)
+    totalW = Inches(8.2)
+    rowH = Emu((Inches(3.8) - (n - 1) * gap) / n)
+    iconSize = Inches(1.1)
+    for i, item in enumerate(items[:n]):
+        y = Emu(CONTENT_TOP + i * (rowH + gap))
+        col = ACCENTS[i % len(ACCENTS)]
+        _rect(slide, LM, y, totalW, rowH, CARD_BG)
+        icon_y = Emu(y + (rowH - iconSize) // 2)
+        icon_x = Emu(LM + Inches(0.3))
+        img_path = item.get("imagePath", "") if isinstance(item, dict) else ""
+        shape_type = DEFAULT_ICON_SHAPES[i % len(DEFAULT_ICON_SHAPES)]
+        _icon_or_image(slide, img_path, icon_x, icon_y, iconSize, iconSize, shape_type, col)
+        text_x = Emu(LM + Inches(1.7))
+        text_w = Emu(totalW - Inches(1.9))
+        title_text = item.get("title", "") if isinstance(item, dict) else str(item)
+        detail_text = item.get("detail", "") if isinstance(item, dict) else ""
+        _tb(slide, text_x, Emu(y + Inches(0.2)),
+            text_w, Inches(0.4),
+            title_text, BODY_FONT, 14, DARK_TEXT, bold=True)
+        if detail_text:
+            _tb(slide, text_x, Emu(y + Inches(0.65)),
+                text_w, Emu(rowH - Inches(0.8)),
+                detail_text, BODY_FONT, 11, MID_TEXT, line_spacing=16)
+
+
 # ── Dispatch ─────────────────────────────────────────────
 BUILDERS = {
     "title": build_title, "in_brief": build_in_brief,
@@ -1344,6 +1422,7 @@ BUILDERS = {
     "text_cards": build_text_cards, "text_columns": build_text_columns,
     "text_narrative": build_text_narrative, "text_nested": build_text_nested,
     "text_split": build_text_split, "text_annotated": build_text_annotated,
+    "icon_cards": build_icon_cards, "feature_cards": build_feature_cards,
 }
 
 def build_deck(slide_configs, output_path):

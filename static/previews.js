@@ -24,9 +24,10 @@ function _slickBar(accent) {
 }
 
 function _slickTitle(title, accent, theme) {
-    const bg = theme === 'editorial' ? '#FAF6F0' : '#fff';
-    const font = theme === 'editorial' ? 'Georgia, serif' : '"Rockwell", Georgia, serif';
-    const ruleColor = theme === 'editorial' ? '#044014' : accent;
+    const isEditorial = theme.startsWith('editorial') || theme === 'editorial_v2';
+    const bg = isEditorial ? '#FAF6F0' : '#fff';
+    const font = isEditorial ? 'Georgia, serif' : '"Rockwell", Georgia, serif';
+    const ruleColor = isEditorial ? '#044014' : accent;
     return `<div data-field="title" style="position:absolute;left:60px;top:22px;width:900px;font-size:20px;font-weight:700;color:#403F3E;font-family:${font}">${title}</div>`;
 }
 
@@ -41,7 +42,7 @@ function _colorfulTitle(title) {
 function _slideOpen(theme, bg) {
     let bgStyle;
     if (bg) bgStyle = `background:${bg}`;
-    else if (theme === 'editorial') bgStyle = 'background:#FAF6F0';
+    else if (theme.startsWith('editorial') || theme === 'editorial_v2') bgStyle = 'background:#FAF6F0';
     else if (theme === 'bold') bgStyle = 'background:#F2F0EC';
     else if (theme === 'noir') bgStyle = 'background:#0D0D0D';
     else bgStyle = 'background:#fff';
@@ -93,6 +94,19 @@ function _stepperBar(labels, activeCount, accent, theme) {
         }
     }
     return html;
+}
+
+/* ---- Icon shape SVG helper --------------------------------------------- */
+function _iconShape(idx, cx, cy, size, color) {
+    const r = size / 2;
+    switch (idx % 3) {
+        case 0: /* circle */
+            return `<circle cx="${cx}" cy="${cy}" r="${r}" fill="${color}"/>`;
+        case 1: /* square */
+            return `<rect x="${cx - r}" y="${cy - r}" width="${size}" height="${size}" rx="4" fill="${color}"/>`;
+        case 2: /* triangle */
+            return `<polygon points="${cx},${cy - r} ${cx + r},${cy + r} ${cx - r},${cy + r}" fill="${color}"/>`;
+    }
 }
 
 /* ========================================================================= */
@@ -154,9 +168,9 @@ const PREVIEW_RENDERERS = {
         }
 
         /* slick / editorial */
-        const bgColor = theme === 'editorial' ? '#FAF6F0' : '#fff';
-        const titleFont = theme === 'editorial' ? 'Georgia, serif' : '"Rockwell", Georgia, serif';
-        const ruleColor = theme === 'editorial' ? '#044014' : accent;
+        const bgColor = theme.startsWith('editorial') ? '#FAF6F0' : '#fff';
+        const titleFont = theme.startsWith('editorial') ? 'Georgia, serif' : '"Rockwell", Georgia, serif';
+        const ruleColor = theme.startsWith('editorial') ? '#044014' : accent;
         return `<div class="preview-slide theme-${theme}" style="background:${bgColor}">
             <div style="position:absolute;left:0;top:0;width:25px;height:100%;background:${accent}"></div>
             <div data-field="title" style="position:absolute;left:90px;top:100px;width:860px;font-size:36px;font-weight:700;color:#403F3E;font-family:${titleFont}">${t}</div>
@@ -208,9 +222,9 @@ const PREVIEW_RENDERERS = {
         }
 
         /* slick / editorial */
-        const bgColor = theme === 'editorial' ? '#044014' : accent;
+        const bgColor = theme.startsWith('editorial') ? '#044014' : accent;
         return `<div class="preview-slide theme-${theme}" style="background:${bgColor}">
-            <div data-field="title" style="position:absolute;left:50px;top:140px;width:900px;font-size:42px;font-weight:700;color:#fff;text-align:center;font-family:${theme === 'editorial' ? 'Georgia, serif' : '"Rockwell", Georgia, serif'}">${t}</div>
+            <div data-field="title" style="position:absolute;left:50px;top:140px;width:900px;font-size:42px;font-weight:700;color:#fff;text-align:center;font-family:${theme.startsWith('editorial') ? 'Georgia, serif' : '"Rockwell", Georgia, serif'}">${t}</div>
             <div style="position:absolute;left:400px;top:280px;width:200px;height:4px;background:rgba(255,255,255,0.4)"></div>
             ${sub ? `<div data-field="subtitle" style="position:absolute;left:50px;top:310px;width:900px;font-size:16px;color:rgba(255,255,255,0.85);text-align:center">${sub}</div>` : ''}
             ${contact ? `<div data-field="contact" style="position:absolute;left:50px;top:420px;width:900px;font-size:13px;color:rgba(255,255,255,0.75);text-align:center">${contact}</div>` : ''}
@@ -299,7 +313,7 @@ const PREVIEW_RENDERERS = {
         let rows = '';
         const rowH = 52;
         const startY = 80;
-        const bg = theme === 'editorial' ? '#FAF6F0' : '#fff';
+        const bg = theme.startsWith('editorial') ? '#FAF6F0' : '#fff';
         items.forEach((item, i) => {
             const c = PREVIEW_COLORS[i % 5];
             const y = startY + i * (rowH + 10);
@@ -392,7 +406,7 @@ const PREVIEW_RENDERERS = {
         let rows = '';
         const rowH = 44;
         const startY = 80;
-        const bg = theme === 'editorial' ? '#FAF6F0' : '#fff';
+        const bg = theme.startsWith('editorial') ? '#FAF6F0' : '#fff';
         bullets.forEach((b, i) => {
             const c = PREVIEW_COLORS[i % 5];
             const y = startY + i * (rowH + 10);
@@ -440,8 +454,8 @@ const PREVIEW_RENDERERS = {
         }
 
         return `<div class="preview-slide theme-${theme}" style="background:${accent}">
-            ${num ? `<div data-field="sectionNumber" style="position:absolute;left:90px;top:100px;font-size:72px;font-weight:700;color:rgba(255,255,255,0.2);font-family:${theme === 'editorial' ? 'Georgia, serif' : '"Rockwell", Georgia, serif'}">${num}</div>` : ''}
-            <div data-field="title" style="position:absolute;left:90px;top:${num ? 200 : 170}px;width:820px;font-size:36px;font-weight:700;color:#fff;font-family:${theme === 'editorial' ? 'Georgia, serif' : '"Rockwell", Georgia, serif'}">${t}</div>
+            ${num ? `<div data-field="sectionNumber" style="position:absolute;left:90px;top:100px;font-size:72px;font-weight:700;color:rgba(255,255,255,0.2);font-family:${theme.startsWith('editorial') ? 'Georgia, serif' : '"Rockwell", Georgia, serif'}">${num}</div>` : ''}
+            <div data-field="title" style="position:absolute;left:90px;top:${num ? 200 : 170}px;width:820px;font-size:36px;font-weight:700;color:#fff;font-family:${theme.startsWith('editorial') ? 'Georgia, serif' : '"Rockwell", Georgia, serif'}">${t}</div>
             <div style="position:absolute;left:90px;top:${num ? 260 : 240}px;width:180px;height:4px;background:rgba(255,255,255,0.4)"></div>
             ${sub ? `<div data-field="subtitle" style="position:absolute;left:90px;top:${num ? 280 : 260}px;width:820px;font-size:15px;color:rgba(255,255,255,0.8)">${sub}</div>` : ''}
         </div>`;
@@ -495,12 +509,12 @@ const PREVIEW_RENDERERS = {
         }
 
         /* slick / editorial */
-        const bg = theme === 'editorial' ? '#FAF6F0' : '#fff';
+        const bg = theme.startsWith('editorial') ? '#FAF6F0' : '#fff';
         return `${_slideOpen(theme, bg)}
             ${_slickBar(accent)}
             ${_slickTitle(t, accent, theme)}
             <div style="position:absolute;left:50%;top:120px;transform:translateX(-50%);width:140px;height:140px;border-radius:50%;background:${accent};opacity:0.12"></div>
-            <div data-field="stat" style="position:absolute;left:60px;top:120px;width:900px;text-align:center;font-size:96px;font-weight:700;color:${accent};font-family:${theme === 'editorial' ? 'Georgia, serif' : '"Rockwell", Georgia, serif'}">${stat}</div>
+            <div data-field="stat" style="position:absolute;left:60px;top:120px;width:900px;text-align:center;font-size:96px;font-weight:700;color:${accent};font-family:${theme.startsWith('editorial') ? 'Georgia, serif' : '"Rockwell", Georgia, serif'}">${stat}</div>
             ${headline ? `<div data-field="headline" style="position:absolute;left:60px;top:300px;width:900px;text-align:center;font-size:18px;font-weight:600;color:#333">${headline}</div>` : ''}
             ${detail ? `<div data-field="detail" style="position:absolute;left:100px;top:335px;width:800px;text-align:center;font-size:13px;color:#555">${detail}</div>` : ''}
             ${source ? `<div data-field="source" style="position:absolute;left:60px;top:510px;width:900px;text-align:center;font-size:10px;color:#999">Source: ${source}</div>` : ''}
@@ -554,13 +568,13 @@ const PREVIEW_RENDERERS = {
         }
 
         /* slick / editorial */
-        const bg = theme === 'editorial' ? '#FAF6F0' : '#fff';
+        const bg = theme.startsWith('editorial') ? '#FAF6F0' : '#fff';
         return `${_slideOpen(theme, bg)}
             ${_slickBar(accent)}
             ${_slickTitle(t, accent, theme)}
             <div style="position:absolute;left:50px;top:80px;width:900px;text-align:center;font-size:72px;color:${accent};font-family:Georgia,serif;line-height:1">\u201C</div>
             <div data-field="quote" style="position:absolute;left:100px;top:140px;width:820px;font-size:18px;font-style:italic;color:#333;line-height:1.6;text-align:center">${q || _placeholder('Quote text...')}</div>
-            <div style="position:absolute;left:50%;top:380px;transform:translateX(-50%);width:200px;height:3px;background:${theme === 'editorial' ? '#044014' : accent}"></div>
+            <div style="position:absolute;left:50%;top:380px;transform:translateX(-50%);width:200px;height:3px;background:${theme.startsWith('editorial') ? '#044014' : accent}"></div>
             ${attr ? `<div data-field="attribution" style="position:absolute;left:100px;top:395px;width:820px;text-align:center;font-size:13px;font-weight:600;color:#333">\u2014 ${attr}</div>` : ''}
             ${ctx ? `<div data-field="context" style="position:absolute;left:100px;top:415px;width:820px;text-align:center;font-size:11px;color:#777">${ctx}</div>` : ''}
         </div>`;
@@ -619,7 +633,7 @@ const PREVIEW_RENDERERS = {
             </div>`;
         }
         // slick / editorial
-        const bg = theme === 'editorial' ? '#FAF6F0' : '#fff';
+        const bg = theme.startsWith('editorial') ? '#FAF6F0' : '#fff';
         return `${_slideOpen(theme, bg)}
             ${_slickBar(accent)}
             ${_slickTitle(t, accent, theme)}
@@ -676,7 +690,7 @@ const PREVIEW_RENDERERS = {
         }
 
         /* slick / editorial */
-        const bg = theme === 'editorial' ? '#FAF6F0' : '#fff';
+        const bg = theme.startsWith('editorial') ? '#FAF6F0' : '#fff';
         return `${_slideOpen(theme, bg)}
             ${_slickBar(accent)}
             ${_slickTitle(t, accent, theme)}
@@ -741,7 +755,7 @@ const PREVIEW_RENDERERS = {
         }
 
         /* slick / editorial */
-        const bg = theme === 'editorial' ? '#FAF6F0' : '#fff';
+        const bg = theme.startsWith('editorial') ? '#FAF6F0' : '#fff';
         return `${_slideOpen(theme, bg)}
             ${_slickBar(accent)}
             ${_slickTitle(t, accent, theme)}
@@ -797,7 +811,7 @@ const PREVIEW_RENDERERS = {
             </div>`;
         }
         /* slick / editorial */
-        const bg = theme === 'editorial' ? '#FAF6F0' : '#fff';
+        const bg = theme.startsWith('editorial') ? '#FAF6F0' : '#fff';
         return `${_slideOpen(theme, bg)}
             ${_slickBar(accent)}
             ${_slickTitle(t, accent, theme)}
@@ -919,7 +933,7 @@ const PREVIEW_RENDERERS = {
         }
 
         /* slick / editorial */
-        const bg = theme === 'editorial' ? '#FAF6F0' : '#fff';
+        const bg = theme.startsWith('editorial') ? '#FAF6F0' : '#fff';
         const gridLeft = 60;
         const gridTop = 80;
         const cellW = 440;
@@ -1027,7 +1041,7 @@ const PREVIEW_RENDERERS = {
         }
 
         /* slick / editorial */
-        const bg = theme === 'editorial' ? '#FAF6F0' : '#fff';
+        const bg = theme.startsWith('editorial') ? '#FAF6F0' : '#fff';
         let rows = '';
         const rowH = 48;
         const startY = 80;
@@ -1138,7 +1152,7 @@ const PREVIEW_RENDERERS = {
         }
 
         /* slick / editorial */
-        const bg = theme === 'editorial' ? '#FAF6F0' : '#fff';
+        const bg = theme.startsWith('editorial') ? '#FAF6F0' : '#fff';
         let rows = '';
         const rowH = 58;
         const startY = 80;
@@ -1245,7 +1259,7 @@ const PREVIEW_RENDERERS = {
         }
 
         /* slick / editorial */
-        const bg = theme === 'editorial' ? '#FAF6F0' : '#fff';
+        const bg = theme.startsWith('editorial') ? '#FAF6F0' : '#fff';
         const cardW = 280;
         const gap = 16;
         let cards = '';
@@ -1313,7 +1327,7 @@ const PREVIEW_RENDERERS = {
             </div>`;
         }
         /* slick / editorial */
-        const bg = theme === 'editorial' ? '#FAF6F0' : '#fff';
+        const bg = theme.startsWith('editorial') ? '#FAF6F0' : '#fff';
         return `${_slideOpen(theme, bg)}
             ${_slickBar(accent)}
             ${_slickTitle(t, accent, theme)}
@@ -1414,7 +1428,7 @@ const PREVIEW_RENDERERS = {
         }
 
         /* slick / editorial */
-        const bg = theme === 'editorial' ? '#FAF6F0' : '#fff';
+        const bg = theme.startsWith('editorial') ? '#FAF6F0' : '#fff';
         let rows = '';
         const rowH = 60;
         const startY = 80;
@@ -1533,7 +1547,7 @@ const PREVIEW_RENDERERS = {
         }
 
         /* slick / editorial */
-        const bg = theme === 'editorial' ? '#FAF6F0' : '#fff';
+        const bg = theme.startsWith('editorial') ? '#FAF6F0' : '#fff';
         let rows = '';
         const rowH = 40;
         const startY = 76;
@@ -1659,7 +1673,7 @@ const PREVIEW_RENDERERS = {
         }
 
         /* slick / editorial */
-        const bg = theme === 'editorial' ? '#FAF6F0' : '#fff';
+        const bg = theme.startsWith('editorial') ? '#FAF6F0' : '#fff';
         const gridLeft = 60;
         const gridTop = 80;
         const cellW = 440;
@@ -1763,7 +1777,7 @@ const PREVIEW_RENDERERS = {
         }
 
         /* slick / editorial */
-        const bg = theme === 'editorial' ? '#FAF6F0' : '#fff';
+        const bg = theme.startsWith('editorial') ? '#FAF6F0' : '#fff';
         return `${_slideOpen(theme, bg)}
             ${_slickBar(accent)}
             ${_slickTitle(t, accent, theme)}
@@ -1876,7 +1890,7 @@ const PREVIEW_RENDERERS = {
         }
 
         /* slick / editorial */
-        const bg = theme === 'editorial' ? '#FAF6F0' : '#fff';
+        const bg = theme.startsWith('editorial') ? '#FAF6F0' : '#fff';
         const lineY = 280;
         const startX = 80;
         const endX = 940;
@@ -1967,7 +1981,7 @@ const PREVIEW_RENDERERS = {
         }
 
         /* slick / editorial */
-        const bg = theme === 'editorial' ? '#FAF6F0' : '#fff';
+        const bg = theme.startsWith('editorial') ? '#FAF6F0' : '#fff';
         const table = buildTable(accent, '#fff', '#fff', '#444', '#eee', '#F5F5F5');
         return `${_slideOpen(theme, bg)}
             ${_slickBar(accent)}
@@ -2063,7 +2077,7 @@ const PREVIEW_RENDERERS = {
         }
 
         /* slick / editorial */
-        const bg = theme === 'editorial' ? '#FAF6F0' : '#fff';
+        const bg = theme.startsWith('editorial') ? '#FAF6F0' : '#fff';
         const cardW = Math.floor((900 - (n - 1) * 16) / n);
         let cards = '';
         stats.forEach((s, i) => {
@@ -2154,7 +2168,7 @@ const PREVIEW_RENDERERS = {
         }
 
         /* slick / editorial */
-        const bg = theme === 'editorial' ? '#FAF6F0' : '#fff';
+        const bg = theme.startsWith('editorial') ? '#FAF6F0' : '#fff';
         return `${_slideOpen(theme, bg)}
             ${_slickBar(accent)}
             ${_slickTitle(t, accent, theme)}
@@ -2292,7 +2306,7 @@ const PREVIEW_RENDERERS = {
         }
 
         /* slick / editorial */
-        const bg = theme === 'editorial' ? '#FAF6F0' : '#fff';
+        const bg = theme.startsWith('editorial') ? '#FAF6F0' : '#fff';
         let riskHtml = '';
         risks.forEach((r, i) => {
             const label = esc(r.label) || _placeholder('Risk ' + (i + 1));
@@ -2401,7 +2415,7 @@ const PREVIEW_RENDERERS = {
         }
 
         /* slick / editorial */
-        const bg = theme === 'editorial' ? '#FAF6F0' : '#fff';
+        const bg = theme.startsWith('editorial') ? '#FAF6F0' : '#fff';
         let rows = '';
         const startY = 80;
         const rowH = 56;
@@ -2501,7 +2515,7 @@ const PREVIEW_RENDERERS = {
         }
 
         /* slick / editorial */
-        const bg = theme === 'editorial' ? '#FAF6F0' : '#fff';
+        const bg = theme.startsWith('editorial') ? '#FAF6F0' : '#fff';
         return `${_slideOpen(theme, bg)}
             ${_slickBar(accent)}
             ${_slickTitle(t, accent, theme)}
@@ -2635,7 +2649,7 @@ const PREVIEW_RENDERERS = {
         }
 
         /* slick / editorial */
-        const bg = theme === 'editorial' ? '#FAF6F0' : '#fff';
+        const bg = theme.startsWith('editorial') ? '#FAF6F0' : '#fff';
         const cols = buildCols('auto', '#444', '#fff', 'rgba(0,0,0,0.06)', true);
         return `${_slideOpen(theme, bg)}
             ${_slickBar(accent)}
@@ -2686,10 +2700,10 @@ const PREVIEW_RENDERERS = {
         }
 
         /* slick / editorial */
-        const bgColor = theme === 'editorial' ? '#044014' : accent;
+        const bgColor = theme.startsWith('editorial') ? '#044014' : accent;
         return `<div class="preview-slide theme-${theme}" style="background:${bgColor}">
             <div style="position:absolute;left:80px;top:80px;font-size:96px;color:rgba(255,255,255,0.2);font-family:Georgia,serif;line-height:1">\u201C</div>
-            <div data-field="quote" style="position:absolute;left:100px;top:160px;width:800px;font-size:22px;font-style:italic;color:#fff;line-height:1.6;text-align:center;font-family:${theme === 'editorial' ? 'Georgia, serif' : '"Rockwell", Georgia, serif'}">${q || _placeholder('Quote text...')}</div>
+            <div data-field="quote" style="position:absolute;left:100px;top:160px;width:800px;font-size:22px;font-style:italic;color:#fff;line-height:1.6;text-align:center;font-family:${theme.startsWith('editorial') ? 'Georgia, serif' : '"Rockwell", Georgia, serif'}">${q || _placeholder('Quote text...')}</div>
             <div style="position:absolute;left:400px;top:380px;width:200px;height:3px;background:rgba(255,255,255,0.4)"></div>
             ${attr ? `<div data-field="attribution" style="position:absolute;left:100px;top:400px;width:800px;text-align:center;font-size:14px;font-weight:600;color:rgba(255,255,255,0.9)">\u2014 ${attr}</div>` : ''}
             ${ctx ? `<div data-field="context" style="position:absolute;left:100px;top:425px;width:800px;text-align:center;font-size:11px;color:rgba(255,255,255,0.7)">${ctx}</div>` : ''}
@@ -2768,12 +2782,12 @@ const PREVIEW_RENDERERS = {
         }
 
         /* slick / editorial */
-        const bg = theme === 'editorial' ? '#FAF6F0' : '#fff';
+        const bg = theme.startsWith('editorial') ? '#FAF6F0' : '#fff';
         return `${_slideOpen(theme, bg)}
             ${_slickBar(accent)}
             ${_slickTitle(t, accent, theme)}
             <div data-field="hero" style="position:absolute;left:100px;top:110px;width:800px;text-align:center">
-                <div style="font-size:110px;font-weight:700;color:${accent};font-family:${theme === 'editorial' ? 'Georgia, serif' : '"Rockwell", Georgia, serif'}">${heroVal || _placeholder('--')}</div>
+                <div style="font-size:110px;font-weight:700;color:${accent};font-family:${theme.startsWith('editorial') ? 'Georgia, serif' : '"Rockwell", Georgia, serif'}">${heroVal || _placeholder('--')}</div>
                 <div style="font-size:16px;font-weight:600;color:#333;margin-top:-10px">${heroLabel}</div>
             </div>
             <div style="position:absolute;left:100px;top:350px;width:800px;height:1px;background:#ddd"></div>
@@ -2842,7 +2856,7 @@ const PREVIEW_RENDERERS = {
         }
 
         /* slick / editorial */
-        const bg = theme === 'editorial' ? '#FAF6F0' : '#fff';
+        const bg = theme.startsWith('editorial') ? '#FAF6F0' : '#fff';
         let bullets = '';
         supporting.forEach((s, i) => {
             const text = esc(s) || _placeholder('Point ' + (i + 1));
@@ -2925,7 +2939,7 @@ const PREVIEW_RENDERERS = {
         }
 
         /* slick / editorial */
-        const bg = theme === 'editorial' ? '#FAF6F0' : '#fff';
+        const bg = theme.startsWith('editorial') ? '#FAF6F0' : '#fff';
         const stack = renderStack({lx: 60, w: 900}, '', '#fff', '#fff', '#333', '#999', '#eee');
         return `${_slideOpen(theme, bg)}
             ${_slickBar(accent)}
@@ -2991,7 +3005,7 @@ const PREVIEW_RENDERERS = {
         }
 
         /* slick / editorial */
-        const bg = theme === 'editorial' ? '#FAF6F0' : '#fff';
+        const bg = theme.startsWith('editorial') ? '#FAF6F0' : '#fff';
         return `${_slideOpen(theme, bg)}
             ${_slickBar(accent)}
             ${_slickTitle(t, accent, theme)}
@@ -3115,7 +3129,7 @@ const PREVIEW_RENDERERS = {
         }
 
         /* slick / editorial */
-        const bg = theme === 'editorial' ? '#FAF6F0' : '#fff';
+        const bg = theme.startsWith('editorial') ? '#FAF6F0' : '#fff';
         const stepH = 58;
         const arrowH = 20;
         const startY = 80;
@@ -3231,7 +3245,7 @@ const PREVIEW_RENDERERS = {
         }
 
         /* slick / editorial */
-        const bg = theme === 'editorial' ? '#FAF6F0' : '#fff';
+        const bg = theme.startsWith('editorial') ? '#FAF6F0' : '#fff';
         const cardW = 435;
         const cardH = Math.min(200, Math.floor((440 - (rows - 1) * 12) / rows));
         let cards = '';
@@ -3330,7 +3344,7 @@ const PREVIEW_RENDERERS = {
         }
 
         /* slick / editorial */
-        const bg = theme === 'editorial' ? '#FAF6F0' : '#fff';
+        const bg = theme.startsWith('editorial') ? '#FAF6F0' : '#fff';
         const colW = Math.floor((900 - (n - 1) * 16) / n);
         let cols = '';
         columns.forEach((col, i) => {
@@ -3391,12 +3405,12 @@ const PREVIEW_RENDERERS = {
         }
 
         /* slick / editorial */
-        const bg = theme === 'editorial' ? '#FAF6F0' : '#fff';
+        const bg = theme.startsWith('editorial') ? '#FAF6F0' : '#fff';
         return `${_slideOpen(theme, bg)}
             ${_slickBar(accent)}
             ${_slickTitle(t, accent, theme)}
-            <div data-field="lede" style="position:absolute;left:60px;top:90px;width:900px;font-size:18px;font-weight:600;color:#333;line-height:1.6;font-family:${theme === 'editorial' ? 'Georgia, serif' : 'inherit'}">${lede || _placeholder('Lead paragraph...')}</div>
-            <div style="position:absolute;left:60px;top:190px;width:200px;height:3px;background:${theme === 'editorial' ? '#044014' : accent}"></div>
+            <div data-field="lede" style="position:absolute;left:60px;top:90px;width:900px;font-size:18px;font-weight:600;color:#333;line-height:1.6;font-family:${theme.startsWith('editorial') ? 'Georgia, serif' : 'inherit'}">${lede || _placeholder('Lead paragraph...')}</div>
+            <div style="position:absolute;left:60px;top:190px;width:200px;height:3px;background:${theme.startsWith('editorial') ? '#044014' : accent}"></div>
             ${body ? `<div data-field="body" style="position:absolute;left:60px;top:210px;width:900px;font-size:12px;color:#555;line-height:1.6">${body}</div>` : ''}
         </div>`;
     },
@@ -3477,7 +3491,7 @@ const PREVIEW_RENDERERS = {
         }
 
         /* slick / editorial */
-        const bg = theme === 'editorial' ? '#FAF6F0' : '#fff';
+        const bg = theme.startsWith('editorial') ? '#FAF6F0' : '#fff';
         let rows = '';
         const startY = 80;
         items.forEach((item, i) => {
@@ -3555,12 +3569,12 @@ const PREVIEW_RENDERERS = {
         }
 
         /* slick / editorial */
-        const bg = theme === 'editorial' ? '#FAF6F0' : '#fff';
+        const bg = theme.startsWith('editorial') ? '#FAF6F0' : '#fff';
         return `${_slideOpen(theme, bg)}
             ${_slickBar(accent)}
             ${_slickTitle(t, accent, theme)}
             <div style="position:absolute;left:60px;top:90px;width:420px">
-                <div data-field="headline" style="font-size:20px;font-weight:700;color:#333;margin-bottom:12px;font-family:${theme === 'editorial' ? 'Georgia, serif' : 'inherit'}">${headline || _placeholder('Headline')}</div>
+                <div data-field="headline" style="font-size:20px;font-weight:700;color:#333;margin-bottom:12px;font-family:${theme.startsWith('editorial') ? 'Georgia, serif' : 'inherit'}">${headline || _placeholder('Headline')}</div>
                 ${detail ? `<div data-field="detail" style="font-size:12px;color:#555;line-height:1.5">${detail}</div>` : ''}
             </div>
             <div style="position:absolute;left:500px;top:90px;width:1px;height:420px;background:#ddd"></div>
@@ -3643,7 +3657,7 @@ const PREVIEW_RENDERERS = {
         }
 
         /* slick / editorial */
-        const bg = theme === 'editorial' ? '#FAF6F0' : '#fff';
+        const bg = theme.startsWith('editorial') ? '#FAF6F0' : '#fff';
         let rows = '';
         const startY = 80;
         const rowH = 48;
@@ -3655,6 +3669,206 @@ const PREVIEW_RENDERERS = {
             rows += `<div style="position:absolute;left:60px;top:${y}px;width:900px;height:${rowH}px;display:flex;align-items:center">
                 <div style="display:inline-block;padding:5px 14px;border-radius:6px;font-size:11px;font-weight:700;background:${c};color:#fff;min-width:100px;text-align:center">${label}</div>
                 <div style="margin-left:14px;font-size:12px;color:#444;flex:1">${text}</div>
+            </div>`;
+        });
+        return `${_slideOpen(theme, bg)}
+            ${_slickBar(accent)}
+            ${_slickTitle(t, accent, theme)}
+            <div data-field="items">${rows}</div>
+        </div>`;
+    },
+
+    /* --------------------------------------------------------------------- */
+    /*  ICON_CARDS                                                            */
+    /* --------------------------------------------------------------------- */
+    icon_cards(data, theme, sc) {
+        const t = esc(data.title || 'Key Points');
+        const items = data.items && data.items.length ? data.items : [
+            { title: '', detail: '' }, { title: '', detail: '' }, { title: '', detail: '' },
+        ];
+        const accent = _accent(sc);
+        const n = Math.min(items.length, 3);
+        const iconSize = 50;
+        const gap = 16;
+        const totalW = 880;
+        const cardW = Math.floor((totalW - (n - 1) * gap) / n);
+
+        if (theme === 'colorful') {
+            let cards = '';
+            items.slice(0, n).forEach((item, i) => {
+                const c = PREVIEW_COLORS[i % 5];
+                const bg2 = PREVIEW_LIGHTS[i % 5];
+                const x = 30 + i * (cardW + gap);
+                const iconCx = x + cardW / 2;
+                const iTitle = esc(item.title) || _placeholder('Card ' + (i + 1));
+                const detail = esc(item.detail);
+                cards += `<svg style="position:absolute;left:${iconCx - iconSize/2}px;top:115px;width:${iconSize}px;height:${iconSize}px" viewBox="0 0 ${iconSize} ${iconSize}">${_iconShape(i, iconSize/2, iconSize/2, iconSize*0.8, c)}</svg>`;
+                cards += `<div style="position:absolute;left:${x}px;top:${115 + iconSize + 10}px;width:${cardW}px;height:200px;background:${bg2};border-radius:8px;overflow:hidden">
+                    <div style="height:5px;background:${c}"></div>
+                    <div style="padding:10px 14px 4px;font-size:13px;font-weight:700;color:${c}">${iTitle}</div>
+                    ${detail ? `<div style="padding:0 14px;font-size:11px;color:#555;line-height:1.4">${detail}</div>` : ''}
+                </div>`;
+            });
+            return `<div class="preview-slide theme-colorful">
+                ${_colorfulBar(accent)}
+                ${_colorfulTitle(t)}
+                <div data-field="items">${cards}</div>
+            </div>`;
+        }
+
+        if (theme === 'noir') {
+            let cards = '';
+            items.slice(0, n).forEach((item, i) => {
+                const c = PREVIEW_COLORS[i % 5];
+                const x = 45 + i * (cardW + gap);
+                const iconCx = x + cardW / 2;
+                const iTitle = esc(item.title) || _placeholder('Card ' + (i + 1));
+                const detail = esc(item.detail);
+                cards += `<svg style="position:absolute;left:${iconCx - iconSize/2}px;top:90px;width:${iconSize}px;height:${iconSize}px" viewBox="0 0 ${iconSize} ${iconSize}">${_iconShape(i, iconSize/2, iconSize/2, iconSize*0.8, c)}</svg>`;
+                cards += `<div style="position:absolute;left:${x}px;top:${90 + iconSize + 10}px;width:${cardW}px;height:200px;background:#141414;border:1px solid #2A2A2A;border-radius:8px;overflow:hidden">
+                    <div style="padding:10px 14px 4px;font-size:13px;font-weight:700;color:${c}">${iTitle}</div>
+                    ${detail ? `<div style="padding:0 14px;font-size:11px;color:#999;line-height:1.4">${detail}</div>` : ''}
+                </div>`;
+            });
+            return `<div class="preview-slide theme-noir" style="background:#0D0D0D">
+                ${_noirBar(accent)}
+                ${_noirTitle(t, accent)}
+                <div data-field="items">${cards}</div>
+            </div>`;
+        }
+
+        if (theme === 'bold') {
+            let cards = '';
+            items.slice(0, n).forEach((item, i) => {
+                const c = PREVIEW_COLORS[i % 5];
+                const x = 65 + i * (cardW + gap);
+                const iconCx = x + cardW / 2;
+                const iTitle = esc(item.title) || _placeholder('Card ' + (i + 1));
+                const detail = esc(item.detail);
+                cards += `<svg style="position:absolute;left:${iconCx - iconSize/2}px;top:90px;width:${iconSize}px;height:${iconSize}px" viewBox="0 0 ${iconSize} ${iconSize}">${_iconShape(i, iconSize/2, iconSize/2, iconSize*0.8, c)}</svg>`;
+                cards += `<div style="position:absolute;left:${x}px;top:${90 + iconSize + 10}px;width:${cardW}px;height:200px;background:#fff;border-radius:8px;box-shadow:0 1px 4px rgba(0,0,0,0.08);overflow:hidden">
+                    <div style="padding:10px 14px 4px;font-size:13px;font-weight:800;color:${c}">${iTitle}</div>
+                    ${detail ? `<div style="padding:0 14px;font-size:11px;color:#555;line-height:1.4">${detail}</div>` : ''}
+                </div>`;
+            });
+            return `<div class="preview-slide theme-bold" style="background:#F2F0EC">
+                ${_boldBar(accent)}
+                ${_boldTitle(t, accent)}
+                <div data-field="items">${cards}</div>
+            </div>`;
+        }
+
+        /* slick / editorial */
+        const bg = theme.startsWith('editorial') ? '#FAF6F0' : '#fff';
+        let cards = '';
+        items.slice(0, n).forEach((item, i) => {
+            const c = PREVIEW_COLORS[i % 5];
+            const x = 60 + i * (cardW + gap);
+            const iconCx = x + cardW / 2;
+            const iTitle = esc(item.title) || _placeholder('Card ' + (i + 1));
+            const detail = esc(item.detail);
+            cards += `<svg style="position:absolute;left:${iconCx - iconSize/2}px;top:80px;width:${iconSize}px;height:${iconSize}px" viewBox="0 0 ${iconSize} ${iconSize}">${_iconShape(i, iconSize/2, iconSize/2, iconSize*0.8, c)}</svg>`;
+            cards += `<div style="position:absolute;left:${x}px;top:${80 + iconSize + 10}px;width:${cardW}px;height:200px;background:#fff;border-radius:8px;box-shadow:0 1px 4px rgba(0,0,0,0.08);overflow:hidden">
+                <div style="padding:10px 14px 4px;font-size:13px;font-weight:700;color:${c}">${iTitle}</div>
+                ${detail ? `<div style="padding:0 14px;font-size:11px;color:#555;line-height:1.4">${detail}</div>` : ''}
+            </div>`;
+        });
+        return `${_slideOpen(theme, bg)}
+            ${_slickBar(accent)}
+            ${_slickTitle(t, accent, theme)}
+            <div data-field="items">${cards}</div>
+        </div>`;
+    },
+
+    /* --------------------------------------------------------------------- */
+    /*  FEATURE_CARDS                                                         */
+    /* --------------------------------------------------------------------- */
+    feature_cards(data, theme, sc) {
+        const t = esc(data.title || 'Features');
+        const items = data.items && data.items.length ? data.items : [
+            { title: '', detail: '' }, { title: '', detail: '' },
+        ];
+        const accent = _accent(sc);
+        const n = Math.min(items.length, 2);
+        const iconSize = 60;
+        const gap = 14;
+        const rowH = Math.floor((300 - (n - 1) * gap) / n);
+
+        if (theme === 'colorful') {
+            let rows = '';
+            items.slice(0, n).forEach((item, i) => {
+                const c = PREVIEW_COLORS[i % 5];
+                const bg2 = PREVIEW_LIGHTS[i % 5];
+                const y = 120 + i * (rowH + gap);
+                const iTitle = esc(item.title) || _placeholder('Feature ' + (i + 1));
+                const detail = esc(item.detail);
+                const iconCy = y + rowH / 2;
+                rows += `<div style="position:absolute;left:30px;top:${y}px;width:940px;height:${rowH}px;background:${bg2};border-radius:8px;overflow:hidden">
+                    <div style="height:5px;background:${c}"></div>
+                    <svg style="position:absolute;left:20px;top:${(rowH - iconSize) / 2}px;width:${iconSize}px;height:${iconSize}px" viewBox="0 0 ${iconSize} ${iconSize}">${_iconShape(i, iconSize/2, iconSize/2, iconSize*0.8, c)}</svg>
+                    <div style="position:absolute;left:100px;top:14px;width:820px;font-size:14px;font-weight:700;color:${c}">${iTitle}</div>
+                    ${detail ? `<div style="position:absolute;left:100px;top:38px;width:820px;font-size:11px;color:#555;line-height:1.4">${detail}</div>` : ''}
+                </div>`;
+            });
+            return `<div class="preview-slide theme-colorful">
+                ${_colorfulBar(accent)}
+                ${_colorfulTitle(t)}
+                <div data-field="items">${rows}</div>
+            </div>`;
+        }
+
+        if (theme === 'noir') {
+            let rows = '';
+            items.slice(0, n).forEach((item, i) => {
+                const c = PREVIEW_COLORS[i % 5];
+                const y = 90 + i * (rowH + gap);
+                const iTitle = esc(item.title) || _placeholder('Feature ' + (i + 1));
+                const detail = esc(item.detail);
+                rows += `<div style="position:absolute;left:45px;top:${y}px;width:920px;height:${rowH}px;background:#141414;border:1px solid #2A2A2A;border-radius:8px;overflow:hidden">
+                    <svg style="position:absolute;left:20px;top:${(rowH - iconSize) / 2}px;width:${iconSize}px;height:${iconSize}px" viewBox="0 0 ${iconSize} ${iconSize}">${_iconShape(i, iconSize/2, iconSize/2, iconSize*0.8, c)}</svg>
+                    <div style="position:absolute;left:100px;top:14px;width:820px;font-size:14px;font-weight:700;color:${c}">${iTitle}</div>
+                    ${detail ? `<div style="position:absolute;left:100px;top:38px;width:820px;font-size:11px;color:#999;line-height:1.4">${detail}</div>` : ''}
+                </div>`;
+            });
+            return `<div class="preview-slide theme-noir" style="background:#0D0D0D">
+                ${_noirBar(accent)}
+                ${_noirTitle(t, accent)}
+                <div data-field="items">${rows}</div>
+            </div>`;
+        }
+
+        if (theme === 'bold') {
+            let rows = '';
+            items.slice(0, n).forEach((item, i) => {
+                const c = PREVIEW_COLORS[i % 5];
+                const y = 90 + i * (rowH + gap);
+                const iTitle = esc(item.title) || _placeholder('Feature ' + (i + 1));
+                const detail = esc(item.detail);
+                rows += `<div style="position:absolute;left:65px;top:${y}px;width:880px;height:${rowH}px;background:#fff;border-radius:8px;box-shadow:0 1px 4px rgba(0,0,0,0.08);overflow:hidden">
+                    <svg style="position:absolute;left:20px;top:${(rowH - iconSize) / 2}px;width:${iconSize}px;height:${iconSize}px" viewBox="0 0 ${iconSize} ${iconSize}">${_iconShape(i, iconSize/2, iconSize/2, iconSize*0.8, c)}</svg>
+                    <div style="position:absolute;left:100px;top:14px;width:760px;font-size:14px;font-weight:800;color:${c}">${iTitle}</div>
+                    ${detail ? `<div style="position:absolute;left:100px;top:38px;width:760px;font-size:11px;color:#555;line-height:1.4">${detail}</div>` : ''}
+                </div>`;
+            });
+            return `<div class="preview-slide theme-bold" style="background:#F2F0EC">
+                ${_boldBar(accent)}
+                ${_boldTitle(t, accent)}
+                <div data-field="items">${rows}</div>
+            </div>`;
+        }
+
+        /* slick / editorial */
+        const bg = theme.startsWith('editorial') ? '#FAF6F0' : '#fff';
+        let rows = '';
+        items.slice(0, n).forEach((item, i) => {
+            const c = PREVIEW_COLORS[i % 5];
+            const y = 80 + i * (rowH + gap);
+            const iTitle = esc(item.title) || _placeholder('Feature ' + (i + 1));
+            const detail = esc(item.detail);
+            rows += `<div style="position:absolute;left:60px;top:${y}px;width:900px;height:${rowH}px;background:#fff;border-radius:8px;box-shadow:0 1px 4px rgba(0,0,0,0.08);overflow:hidden">
+                <svg style="position:absolute;left:20px;top:${(rowH - iconSize) / 2}px;width:${iconSize}px;height:${iconSize}px" viewBox="0 0 ${iconSize} ${iconSize}">${_iconShape(i, iconSize/2, iconSize/2, iconSize*0.8, c)}</svg>
+                <div style="position:absolute;left:100px;top:14px;width:780px;font-size:14px;font-weight:700;color:${c}">${iTitle}</div>
+                ${detail ? `<div style="position:absolute;left:100px;top:38px;width:780px;font-size:11px;color:#555;line-height:1.4">${detail}</div>` : ''}
             </div>`;
         });
         return `${_slideOpen(theme, bg)}
