@@ -13,6 +13,30 @@ const SECTION_COLOR_HEX = {
     red: '#C23B22', teal: '#1B7A6E', ochre: '#CC7A2E', slate: '#5A6A7A', plum: '#8E4585'
 };
 
+const EV2 = {
+    DK_GREEN: '#044014', GOLD: '#D4A843', CHARCOAL: '#2D2D2D',
+    BLACK: '#1A1A1A', MID: '#666', QUIET: '#999', FAINT: '#CCC',
+    RULE_CLR: '#DDD', WARM: '#F0EDE6', COOL: '#EAEEF0',
+    LIGHT_BOX: '#F7F6F4', COBALT: '#04547C', PURPLE: '#5B2C8F',
+    CREAM: '#E8E0CC', LIGHT_GREEN: '#A8C4A0',
+    ACCENTS: ['#044014', '#04547C', '#5B2C8F', '#D4A843', '#1B7A6E', '#C23B22', '#CC7A2E'],
+    TF: "Georgia, 'Fidelity Slab', serif",
+    BF: "Calibri, 'Fidelity Sans', sans-serif",
+};
+
+function _ev2TopRule(isDark) {
+    return `<div style="position:absolute;left:0;top:0;width:100%;height:4px;background:${isDark ? EV2.GOLD : EV2.DK_GREEN}"></div>`;
+}
+function _ev2RunningHead(title) {
+    return `<div style="position:absolute;left:65px;top:12px;width:700px;font-size:9px;font-weight:700;color:${EV2.QUIET};text-transform:uppercase;font-family:${EV2.BF};letter-spacing:0.5px">${esc(title)}</div>`;
+}
+function _ev2White(title) {
+    return `<div class="preview-slide theme-editorial_v2" style="background:#fff">${_ev2TopRule(false)}${_ev2RunningHead(title)}`;
+}
+function _ev2Dark() {
+    return `<div class="preview-slide theme-editorial_v2" style="background:${EV2.DK_GREEN}">${_ev2TopRule(true)}`;
+}
+
 /* ---------- tiny helpers ------------------------------------------------- */
 
 function _accent(sc) {
@@ -24,7 +48,7 @@ function _slickBar(accent) {
 }
 
 function _slickTitle(title, accent, theme) {
-    const isEditorial = theme.startsWith('editorial') || theme === 'editorial_v2';
+    const isEditorial = theme === 'editorial';
     const bg = isEditorial ? '#FAF6F0' : '#fff';
     const font = isEditorial ? 'Georgia, serif' : '"Rockwell", Georgia, serif';
     const ruleColor = isEditorial ? '#044014' : accent;
@@ -42,7 +66,8 @@ function _colorfulTitle(title) {
 function _slideOpen(theme, bg) {
     let bgStyle;
     if (bg) bgStyle = `background:${bg}`;
-    else if (theme.startsWith('editorial') || theme === 'editorial_v2') bgStyle = 'background:#FAF6F0';
+    else if (theme === 'editorial') bgStyle = 'background:#FAF6F0';
+    else if (theme === 'editorial_v2') bgStyle = 'background:#fff';
     else if (theme === 'bold') bgStyle = 'background:#F2F0EC';
     else if (theme === 'noir') bgStyle = 'background:#0D0D0D';
     else bgStyle = 'background:#fff';
@@ -167,6 +192,16 @@ const PREVIEW_RENDERERS = {
             </div>`;
         }
 
+        if (theme === 'editorial_v2') {
+            const tSize = t.length > 60 ? 28 : 36;
+            return `${_ev2Dark()}
+                <div data-field="title" style="position:absolute;left:80px;top:60px;width:840px;font-size:${tSize}px;font-weight:700;color:#fff;font-family:${EV2.TF};line-height:1.25">${t}</div>
+                <div style="position:absolute;left:80px;top:${tSize > 28 ? 250 : 220}px;width:200px;height:3px;background:${EV2.GOLD}"></div>
+                ${sub ? `<div data-field="subtitle" style="position:absolute;left:80px;top:${tSize > 28 ? 270 : 240}px;width:800px;font-size:14px;color:${EV2.CREAM};font-family:${EV2.BF};line-height:1.4">${sub}</div>` : ''}
+                ${auth || dt ? `<div style="position:absolute;left:80px;bottom:30px;font-size:10px;color:${EV2.LIGHT_GREEN};font-family:${EV2.BF}">${auth ? `<span data-field="author">${auth}</span>` : ''}${auth && dt ? '<br>' : ''}${dt ? `<span data-field="date">${dt}</span>` : ''}</div>` : ''}
+            </div>`;
+        }
+
         /* slick / editorial */
         const bgColor = theme.startsWith('editorial') ? '#FAF6F0' : '#fff';
         const titleFont = theme.startsWith('editorial') ? 'Georgia, serif' : '"Rockwell", Georgia, serif';
@@ -218,6 +253,15 @@ const PREVIEW_RENDERERS = {
                 <div style="position:absolute;left:400px;top:280px;width:200px;height:5px;background:${accent}"></div>
                 ${sub ? `<div data-field="subtitle" style="position:absolute;left:50px;top:310px;width:900px;font-size:16px;color:rgba(255,255,255,0.75);text-align:center">${sub}</div>` : ''}
                 ${contact ? `<div data-field="contact" style="position:absolute;left:50px;top:420px;width:900px;font-size:13px;color:rgba(255,255,255,0.6);text-align:center">${contact}</div>` : ''}
+            </div>`;
+        }
+
+        if (theme === 'editorial_v2') {
+            return `${_ev2Dark()}
+                <div data-field="title" style="position:absolute;left:80px;top:100px;width:840px;font-size:36px;font-weight:700;color:#fff;font-family:${EV2.TF};line-height:1.2">${t}</div>
+                <div style="position:absolute;left:80px;top:230px;width:200px;height:3px;background:${EV2.GOLD}"></div>
+                ${sub ? `<div data-field="subtitle" style="position:absolute;left:80px;top:260px;width:800px;font-size:18px;font-style:italic;color:${EV2.CREAM};font-family:${EV2.TF};line-height:1.4">${sub}</div>` : ''}
+                ${contact ? `<div data-field="contact" style="position:absolute;left:80px;bottom:30px;font-size:10px;color:${EV2.LIGHT_GREEN};font-family:${EV2.BF}">${contact}</div>` : ''}
             </div>`;
         }
 
@@ -306,6 +350,35 @@ const PREVIEW_RENDERERS = {
                 ${_boldBar(accent)}
                 ${_boldTitle(t, accent)}
                 <div data-field="items">${rows}</div>
+            </div>`;
+        }
+
+        if (theme === 'editorial_v2') {
+            let cards = '';
+            const cols = items.length <= 4 ? 2 : 3;
+            const colW = Math.floor((900 - (cols - 1) * 20) / cols);
+            items.forEach((item, i) => {
+                const color = EV2.ACCENTS[i % 7];
+                const col = i % cols;
+                const row = Math.floor(i / cols);
+                const x = 50 + col * (colW + 20);
+                const y = 160 + row * 110;
+                const topic = esc(item.title || item.label) || _placeholder('Topic ' + (i + 1));
+                const det = esc(item.detail || '');
+                cards += `<div style="position:absolute;left:${x}px;top:${y}px;width:${colW}px;height:90px">
+                    <div style="position:absolute;left:0;top:0;width:4px;height:90px;background:${color}"></div>
+                    <div style="position:absolute;left:14px;top:6px;font-size:16px;font-weight:700;color:${color};font-family:${EV2.TF}">${i + 1}</div>
+                    <div style="position:absolute;left:14px;top:30px;width:${colW - 24}px;font-size:12px;font-weight:700;color:${EV2.CHARCOAL};font-family:${EV2.TF};line-height:1.2">${topic}</div>
+                    ${det ? `<div style="position:absolute;left:14px;top:58px;width:${colW - 24}px;font-size:9px;color:${EV2.QUIET};font-family:${EV2.BF}">${det}</div>` : ''}
+                </div>`;
+            });
+            return `<div class="preview-slide theme-editorial_v2" style="background:#fff">
+                <div style="position:absolute;left:50px;top:12px;width:900px;text-align:center;font-size:9px;font-weight:700;color:${EV2.QUIET};text-transform:uppercase;font-family:${EV2.BF};letter-spacing:0.5px">${esc(t).toUpperCase()}</div>
+                <div style="position:absolute;left:30px;top:32px;width:940px;height:2px;background:${EV2.CHARCOAL}"></div>
+                <div style="position:absolute;left:30px;top:35px;width:940px;height:1px;background:${EV2.CHARCOAL}"></div>
+                <div style="position:absolute;left:50px;top:52px;font-size:36px;font-weight:700;color:${EV2.BLACK};font-family:${EV2.TF}">Agenda</div>
+                <div style="position:absolute;left:30px;top:120px;width:940px;height:1px;background:${EV2.RULE_CLR}"></div>
+                ${cards}
             </div>`;
         }
 
@@ -402,6 +475,20 @@ const PREVIEW_RENDERERS = {
             </div>`;
         }
 
+        if (theme === 'editorial_v2') {
+            const n2 = bullets.length || 1;
+            const firstBullet = esc(bullets[0]) || _placeholder('Key point 1');
+            return `${_ev2White(t)}
+                <div style="position:absolute;right:65px;top:10px;font-size:12px;font-weight:700;color:${EV2.GOLD};font-family:${EV2.BF}">1 of ${n2}</div>
+                <div style="position:absolute;left:65px;top:35px;width:870px;height:3px;background:${EV2.RULE_CLR}"></div>
+                <div style="position:absolute;left:65px;top:35px;width:${Math.floor(870 / n2)}px;height:3px;background:${EV2.DK_GREEN}"></div>
+                <div data-field="bullets" style="position:absolute;left:65px;top:65px;width:870px;font-size:22px;font-weight:700;color:${EV2.BLACK};font-family:${EV2.TF};line-height:1.4">${firstBullet}</div>
+                <div style="position:absolute;left:65px;top:200px;width:250px;height:3px;background:${EV2.GOLD}"></div>
+                ${n2 > 1 ? `<div style="position:absolute;left:65px;top:225px;font-size:8px;font-weight:700;color:${EV2.QUIET};font-family:${EV2.BF};letter-spacing:0.5px">PREVIOUSLY</div>
+                ${bullets.slice(1, 4).map((b, j) => `<div style="position:absolute;left:65px;top:${246 + j * 30}px;font-size:10px;color:${EV2.QUIET};font-family:${EV2.BF}"><span style="font-weight:700;color:${EV2.FAINT};font-family:${EV2.TF};margin-right:8px">${j + 2}</span>${esc(b)}</div>`).join('')}` : ''}
+            </div>`;
+        }
+
         /* slick / editorial */
         let rows = '';
         const rowH = 44;
@@ -450,6 +537,15 @@ const PREVIEW_RENDERERS = {
                 <div data-field="title" style="position:absolute;left:90px;top:${num ? 200 : 170}px;width:820px;font-size:36px;font-weight:800;color:#fff;font-family:'Trebuchet MS',sans-serif">${t}</div>
                 <div style="position:absolute;left:90px;top:${num ? 260 : 240}px;width:180px;height:5px;background:rgba(255,255,255,0.4)"></div>
                 ${sub ? `<div data-field="subtitle" style="position:absolute;left:90px;top:${num ? 280 : 260}px;width:820px;font-size:15px;color:rgba(255,255,255,0.8)">${sub}</div>` : ''}
+            </div>`;
+        }
+
+        if (theme === 'editorial_v2') {
+            return `${_ev2Dark()}
+                ${num ? `<div data-field="sectionNumber" style="position:absolute;left:80px;top:60px;font-size:48px;font-weight:700;color:${EV2.GOLD};font-family:${EV2.TF}">${num}</div>` : ''}
+                <div data-field="title" style="position:absolute;left:80px;top:${num ? 130 : 100}px;width:840px;font-size:32px;font-weight:700;color:#fff;font-family:${EV2.TF};line-height:1.25">${t}</div>
+                <div style="position:absolute;left:80px;top:${num ? 220 : 190}px;width:200px;height:3px;background:${EV2.GOLD}"></div>
+                ${sub ? `<div data-field="subtitle" style="position:absolute;left:80px;top:${num ? 240 : 210}px;width:840px;font-size:13px;font-style:italic;color:${EV2.CREAM};font-family:${EV2.BF}">${sub}</div>` : ''}
             </div>`;
         }
 
@@ -505,6 +601,18 @@ const PREVIEW_RENDERERS = {
                 ${headline ? `<div data-field="headline" style="position:absolute;left:65px;top:300px;width:880px;text-align:center;font-size:18px;font-weight:700;color:#1A1A1A">${headline}</div>` : ''}
                 ${detail ? `<div data-field="detail" style="position:absolute;left:100px;top:335px;width:800px;text-align:center;font-size:13px;color:#555">${detail}</div>` : ''}
                 ${source ? `<div data-field="source" style="position:absolute;left:65px;top:510px;width:880px;text-align:center;font-size:10px;color:#999">Source: ${source}</div>` : ''}
+            </div>`;
+        }
+
+        if (theme === 'editorial_v2') {
+            return `${_ev2White(t)}
+                <div data-field="stat" style="position:absolute;left:65px;top:50px;width:500px;font-size:96px;font-weight:700;color:${EV2.DK_GREEN};font-family:${EV2.TF};line-height:1;display:flex;align-items:center;height:350px">${stat}</div>
+                <div style="position:absolute;left:580px;top:100px;width:360px">
+                    ${headline ? `<div data-field="headline" style="font-size:18px;font-weight:700;color:${EV2.CHARCOAL};font-family:${EV2.TF};margin-bottom:10px;line-height:1.3">${headline}</div>` : ''}
+                    <div style="width:120px;height:2px;background:${EV2.GOLD};margin:10px 0"></div>
+                    ${detail ? `<div data-field="detail" style="font-size:11px;color:${EV2.MID};font-family:${EV2.BF};line-height:1.5">${detail}</div>` : ''}
+                    ${source ? `<div data-field="source" style="font-size:8px;font-style:italic;color:${EV2.QUIET};font-family:${EV2.BF};margin-top:15px">${source}</div>` : ''}
+                </div>
             </div>`;
         }
 
@@ -564,6 +672,16 @@ const PREVIEW_RENDERERS = {
                 <div style="position:absolute;left:85px;top:360px;width:150px;height:4px;background:${accent}"></div>
                 ${attr ? `<div data-field="attribution" style="position:absolute;left:85px;top:375px;font-size:12px;font-weight:700;color:#1A1A1A">\u2014 ${attr}</div>` : ''}
                 ${ctx ? `<div data-field="context" style="position:absolute;left:85px;top:393px;font-size:11px;color:#555">${ctx}</div>` : ''}
+            </div>`;
+        }
+
+        if (theme === 'editorial_v2') {
+            const q2 = esc(data.quote) || _placeholder('Quote text...');
+            const attr2 = esc(data.attribution);
+            return `${_ev2Dark()}
+                <div style="position:absolute;left:80px;top:30px;font-size:120px;color:${EV2.GOLD};font-family:${EV2.TF};line-height:1">\u201C</div>
+                <div data-field="quote" style="position:absolute;left:100px;top:150px;width:800px;font-size:22px;font-style:italic;color:#fff;line-height:1.6;font-family:${EV2.TF}">${q2}</div>
+                ${attr2 ? `<div style="position:absolute;left:100px;top:380px;width:80px;height:2px;background:${EV2.GOLD}"></div><div data-field="attribution" style="position:absolute;left:195px;top:372px;font-size:12px;font-weight:700;color:${EV2.GOLD};font-family:${EV2.BF}">${attr2}</div>` : ''}
             </div>`;
         }
 
@@ -632,6 +750,28 @@ const PREVIEW_RENDERERS = {
                 ${renderCard(510, 430, rightColor, rightLabel, rightItems)}
             </div>`;
         }
+
+        if (theme === 'editorial_v2') {
+            const ll = esc(data.leftLabel || 'Option A');
+            const rl = esc(data.rightLabel || 'Option B');
+            const n2 = Math.max(leftItems.length, rightItems.length);
+            let rows = '';
+            for (let i = 0; i < Math.min(n2, 5); i++) {
+                const y = 115 + i * 68;
+                const lText = esc(typeof leftItems[i] === 'string' ? leftItems[i] : (leftItems[i]?.text || '')) || '';
+                const rText = esc(typeof rightItems[i] === 'string' ? rightItems[i] : (rightItems[i]?.text || '')) || '';
+                rows += `<div style="position:absolute;left:30px;top:${y}px;width:460px;height:58px;background:${EV2.WARM}"><div style="position:absolute;left:0;top:0;width:6px;height:100%;background:${EV2.DK_GREEN}"></div><div style="padding:10px 12px 0 18px;font-size:11px;color:${EV2.CHARCOAL};font-family:${EV2.BF};line-height:1.4">${lText}</div></div>
+                <div style="position:absolute;left:505px;top:${y}px;width:460px;height:58px;background:${EV2.COOL}"><div style="position:absolute;left:0;top:0;width:6px;height:100%;background:${EV2.COBALT}"></div><div style="padding:10px 12px 0 18px;font-size:11px;color:${EV2.CHARCOAL};font-family:${EV2.BF};line-height:1.4">${rText}</div></div>`;
+            }
+            return `${_ev2White(t)}
+                <div style="position:absolute;left:50px;top:42px;font-size:14px;font-weight:700;color:${EV2.DK_GREEN};font-family:${EV2.TF}">${ll}</div>
+                <div style="position:absolute;left:50px;top:65px;width:140px;height:2px;background:${EV2.DK_GREEN}"></div>
+                <div style="position:absolute;left:525px;top:42px;font-size:14px;font-weight:700;color:${EV2.COBALT};font-family:${EV2.TF}">${rl}</div>
+                <div style="position:absolute;left:525px;top:65px;width:140px;height:2px;background:${EV2.COBALT}"></div>
+                ${rows}
+            </div>`;
+        }
+
         // slick / editorial
         const bg = theme.startsWith('editorial') ? '#FAF6F0' : '#fff';
         return `${_slideOpen(theme, bg)}
@@ -686,6 +826,14 @@ const PREVIEW_RENDERERS = {
                 <div data-field="text" style="position:absolute;left:65px;top:80px;width:420px">${pHtml}</div>
                 <div style="position:absolute;left:505px;top:80px;width:1px;height:440px;background:#ddd"></div>
                 <div style="position:absolute;left:525px;top:80px;width:430px;height:440px;border:2px dashed #ccc;border-radius:8px;display:flex;align-items:center;justify-content:center;color:#aaa;font-size:14px">Chart area</div>
+            </div>`;
+        }
+
+        if (theme === 'editorial_v2') {
+            return `${_ev2White(t)}
+                <div data-field="text" style="position:absolute;left:60px;top:80px;width:420px">${pHtml}</div>
+                <div style="position:absolute;left:500px;top:80px;width:1px;height:440px;background:${EV2.RULE_CLR}"></div>
+                <div style="position:absolute;left:520px;top:80px;width:440px;height:440px;border:2px dashed ${EV2.FAINT};border-radius:8px;display:flex;align-items:center;justify-content:center;color:${EV2.QUIET};font-size:14px;font-family:${EV2.BF}">Chart area</div>
             </div>`;
         }
 
@@ -754,6 +902,30 @@ const PREVIEW_RENDERERS = {
             </div>`;
         }
 
+        if (theme === 'editorial_v2') {
+            const cardW = Math.min(200, Math.floor((900 - (n - 1) * 35) / n));
+            let cards = '';
+            steps.forEach((step, i) => {
+                const color = EV2.ACCENTS[i % 7];
+                const x = 50 + i * (cardW + 35);
+                const lbl = esc(step.label || step.title) || _placeholder('Step ' + (i + 1));
+                const det = esc(step.detail || '');
+                cards += `<div style="position:absolute;left:${x}px;top:90px;width:${cardW}px;height:350px">
+                    <div style="width:100%;height:6px;background:${color}"></div>
+                    <div style="position:absolute;left:${cardW/2 - 18}px;top:20px;width:36px;height:36px;border-radius:50%;background:${color};color:#fff;font-size:14px;font-weight:700;display:flex;align-items:center;justify-content:center;font-family:${EV2.BF}">${i + 1}</div>
+                    <div style="position:absolute;left:15px;top:72px;width:${cardW - 30}px;font-size:13px;font-weight:700;color:${EV2.CHARCOAL};font-family:${EV2.TF};line-height:1.3">${lbl}</div>
+                    <div style="position:absolute;left:15px;top:120px;width:${Math.floor(cardW * 0.4)}px;height:2px;background:${color}"></div>
+                    ${det ? `<div style="position:absolute;left:15px;top:135px;width:${cardW - 30}px;font-size:10px;color:${EV2.MID};font-family:${EV2.BF};line-height:1.5">${det}</div>` : ''}
+                </div>`;
+                if (i < n - 1) cards += `<div style="position:absolute;left:${x + cardW + 8}px;top:110px;font-size:16px;font-weight:700;color:${EV2.GOLD};font-family:${EV2.TF}">\u2192</div>`;
+            });
+            return `<div class="preview-slide theme-editorial_v2" style="background:#fff">
+                ${_ev2TopRule(false)}
+                <div style="position:absolute;left:50px;top:18px;font-size:20px;font-weight:700;color:${EV2.CHARCOAL};font-family:${EV2.TF}">${t}</div>
+                ${cards}
+            </div>`;
+        }
+
         /* slick / editorial */
         const bg = theme.startsWith('editorial') ? '#FAF6F0' : '#fff';
         return `${_slideOpen(theme, bg)}
@@ -810,6 +982,13 @@ const PREVIEW_RENDERERS = {
                 ${featuredCard(200, 600, '#fff', '#1A1A1A', '#555', 'box-shadow:0 1px 4px rgba(0,0,0,0.1);')}
             </div>`;
         }
+        if (theme === 'editorial_v2') {
+            return `${_ev2White(t)}
+                <div style="position:absolute;left:0;top:75px;width:1000px;height:55px">${_stepperBar(labels, 1, accent, theme)}</div>
+                ${featuredCard(200, 600, EV2.LIGHT_BOX, EV2.CHARCOAL, EV2.MID, '')}
+            </div>`;
+        }
+
         /* slick / editorial */
         const bg = theme.startsWith('editorial') ? '#FAF6F0' : '#fff';
         return `${_slideOpen(theme, bg)}
@@ -932,6 +1111,33 @@ const PREVIEW_RENDERERS = {
             </div>`;
         }
 
+        if (theme === 'editorial_v2') {
+            const gridLeft2 = 60;
+            const gridTop2 = 80;
+            const cellW2 = 440;
+            const cellH2 = 210;
+            const gap2 = 12;
+            let cells2 = '';
+            quads.forEach((q, i) => {
+                const color = EV2.ACCENTS[i % 7];
+                const pos = positions[i];
+                const cx = gridLeft2 + pos.x * (cellW2 + gap2);
+                const cy = gridTop2 + pos.y * (cellH2 + gap2);
+                const label = esc(q.label) || _placeholder(quadLabels[i]);
+                const detail = esc(q.detail);
+                cells2 += `<div style="position:absolute;left:${cx}px;top:${cy}px;width:${cellW2}px;height:${cellH2}px;background:${EV2.LIGHT_BOX};overflow:hidden">
+                    <div style="position:absolute;left:0;top:0;width:5px;height:100%;background:${color}"></div>
+                    <div style="padding:10px 14px 4px 18px;font-size:13px;font-weight:700;color:${color};font-family:${EV2.TF}">${label}</div>
+                    ${detail ? `<div style="padding:0 14px 0 18px;font-size:11px;color:${EV2.MID};font-family:${EV2.BF};line-height:1.4">${detail}</div>` : ''}
+                </div>`;
+            });
+            return `${_ev2White(t)}
+                ${xAxis ? `<div data-field="xAxis" style="position:absolute;left:60px;top:530px;width:900px;text-align:center;font-size:11px;color:${EV2.QUIET};font-family:${EV2.BF}">${xAxis} \u2192</div>` : ''}
+                ${yAxis ? `<div data-field="yAxis" style="position:absolute;left:30px;top:80px;width:18px;font-size:11px;color:${EV2.QUIET};font-family:${EV2.BF};writing-mode:vertical-rl;transform:rotate(180deg);text-align:center;height:430px">\u2190 ${yAxis}</div>` : ''}
+                <div data-field="quadrants">${cells2}</div>
+            </div>`;
+        }
+
         /* slick / editorial */
         const bg = theme.startsWith('editorial') ? '#FAF6F0' : '#fff';
         const gridLeft = 60;
@@ -1037,6 +1243,26 @@ const PREVIEW_RENDERERS = {
                 ${_boldBar(accent)}
                 ${_boldTitle(t, accent)}
                 <div data-field="fields">${rows}</div>
+            </div>`;
+        }
+
+        if (theme === 'editorial_v2') {
+            let rows2 = '';
+            const rowH2 = 48;
+            const startY2 = 80;
+            fields.forEach((f, i) => {
+                const color = EV2.ACCENTS[i % 7];
+                const y = startY2 + i * (rowH2 + 10);
+                const label = esc(f.label) || _placeholder('Label');
+                const value = esc(f.value) || _placeholder('Value');
+                rows2 += `<div style="position:absolute;left:60px;top:${y}px;width:900px;height:${rowH2}px;background:${EV2.LIGHT_BOX};overflow:hidden">
+                    <div style="position:absolute;left:0;top:0;width:5px;height:100%;background:${color}"></div>
+                    <div style="position:absolute;left:16px;top:14px;font-size:13px;font-weight:700;color:${color};font-family:${EV2.TF};width:180px">${label}</div>
+                    <div style="position:absolute;left:210px;top:14px;font-size:12px;color:${EV2.CHARCOAL};font-family:${EV2.BF};width:700px">${value}</div>
+                </div>`;
+            });
+            return `${_ev2White(t)}
+                <div data-field="fields">${rows2}</div>
             </div>`;
         }
 
@@ -1151,6 +1377,26 @@ const PREVIEW_RENDERERS = {
             </div>`;
         }
 
+        if (theme === 'editorial_v2') {
+            let rows2 = '';
+            const rowH2 = 58;
+            const startY2 = 80;
+            hyps.forEach((h, i) => {
+                const color = EV2.ACCENTS[i % 7];
+                const y = startY2 + i * (rowH2 + 10);
+                const text = esc(h.text) || _placeholder('Hypothesis ' + (i + 1));
+                rows2 += `<div style="position:absolute;left:60px;top:${y}px;width:900px;height:${rowH2}px;background:${EV2.LIGHT_BOX};overflow:hidden">
+                    <div style="position:absolute;left:0;top:0;width:5px;height:100%;background:${color}"></div>
+                    <div style="position:absolute;left:14px;top:14px;width:30px;height:30px;border-radius:50%;background:${color};color:#fff;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;font-family:${EV2.BF}">H${i + 1}</div>
+                    <div style="position:absolute;left:56px;top:18px;font-size:12px;color:${EV2.CHARCOAL};font-family:${EV2.BF};width:660px">${text}</div>
+                    <div style="position:absolute;right:16px;top:16px">${badgeHtml(h.status)}</div>
+                </div>`;
+            });
+            return `${_ev2White(t)}
+                <div data-field="hypotheses">${rows2}</div>
+            </div>`;
+        }
+
         /* slick / editorial */
         const bg = theme.startsWith('editorial') ? '#FAF6F0' : '#fff';
         let rows = '';
@@ -1258,6 +1504,28 @@ const PREVIEW_RENDERERS = {
             </div>`;
         }
 
+        if (theme === 'editorial_v2') {
+            const ev2CardW = 280;
+            const ev2Gap = 16;
+            const ev2Colors = [EV2.DK_GREEN, EV2.COBALT, EV2.PURPLE];
+            let ev2Cards = '';
+            cols.forEach((col, i) => {
+                const x = 60 + i * (ev2CardW + ev2Gap);
+                const cc = ev2Colors[i % 3];
+                const headline = esc(col.data.headline) || _placeholder(col.label + ' headline');
+                const detail = esc(col.data.detail);
+                ev2Cards += `<div data-field="${col.key}" style="position:absolute;left:${x}px;top:80px;width:${ev2CardW}px;height:440px;background:${EV2.LIGHT_BOX}">
+                    <div style="position:absolute;left:0;top:0;width:4px;height:100%;background:${cc}"></div>
+                    <div style="padding:14px 14px 4px 18px;font-size:14px;font-weight:700;color:${cc};font-family:${EV2.TF}">${col.label}</div>
+                    <div style="padding:4px 14px 0 18px;font-size:12px;font-weight:600;color:${EV2.CHARCOAL};font-family:${EV2.BF}">${headline}</div>
+                    ${detail ? `<div style="padding:4px 14px 0 18px;font-size:11px;color:${EV2.MID};font-family:${EV2.BF};line-height:1.4">${detail}</div>` : ''}
+                </div>`;
+            });
+            return `${_ev2White(t)}
+                ${ev2Cards}
+            </div>`;
+        }
+
         /* slick / editorial */
         const bg = theme.startsWith('editorial') ? '#FAF6F0' : '#fff';
         const cardW = 280;
@@ -1326,6 +1594,13 @@ const PREVIEW_RENDERERS = {
                 ${featuredCard(200, 600, '#fff', '#1A1A1A', '#555', 'box-shadow:0 1px 4px rgba(0,0,0,0.1);')}
             </div>`;
         }
+        if (theme === 'editorial_v2') {
+            return `${_ev2White(t)}
+                <div style="position:absolute;left:0;top:75px;width:1000px;height:55px">${_stepperBar(labels, 1, accent, theme)}</div>
+                ${featuredCard(200, 600, EV2.LIGHT_BOX, EV2.CHARCOAL, EV2.MID, '')}
+            </div>`;
+        }
+
         /* slick / editorial */
         const bg = theme.startsWith('editorial') ? '#FAF6F0' : '#fff';
         return `${_slideOpen(theme, bg)}
@@ -1424,6 +1699,24 @@ const PREVIEW_RENDERERS = {
                 ${_boldBar(accent)}
                 ${_boldTitle(t, accent)}
                 <div data-field="items">${rows}</div>
+            </div>`;
+        }
+
+        if (theme === 'editorial_v2') {
+            let rows = '';
+            items.forEach((item, i) => {
+                const y = 95 + i * 70;
+                const finding = esc(item.finding) || '';
+                const rec = esc(item.recommendation || item.rec) || '';
+                rows += `<div style="position:absolute;left:30px;top:${y}px;width:420px;height:58px;background:${EV2.WARM}"><div style="position:absolute;left:0;top:0;width:5px;height:100%;background:${EV2.DK_GREEN}"></div><div style="padding:10px 12px 0 16px;font-size:11px;color:${EV2.CHARCOAL};font-family:${EV2.BF};line-height:1.4">${finding}</div></div>
+                <div style="position:absolute;left:462px;top:${y + 14}px;font-size:18px;font-weight:700;color:${EV2.GOLD};font-family:${EV2.TF}">\u2192</div>
+                <div style="position:absolute;left:500px;top:${y}px;width:470px;height:58px;background:${EV2.COOL}"><div style="position:absolute;left:0;top:0;width:5px;height:100%;background:${EV2.COBALT}"></div><div style="padding:10px 12px 0 16px;font-size:11px;color:${EV2.CHARCOAL};font-family:${EV2.BF};line-height:1.4">${rec}</div></div>`;
+            });
+            return `${_ev2White(t)}
+                <div style="position:absolute;left:48px;top:42px;font-size:9px;font-weight:700;color:${EV2.DK_GREEN};font-family:${EV2.BF};letter-spacing:0.5px">FINDING</div>
+                <div style="position:absolute;left:518px;top:42px;font-size:9px;font-weight:700;color:${EV2.COBALT};font-family:${EV2.BF};letter-spacing:0.5px">RECOMMENDATION</div>
+                <div style="position:absolute;left:30px;top:62px;width:940px;height:1px;background:${EV2.CHARCOAL}"></div>
+                ${rows}
             </div>`;
         }
 
@@ -1543,6 +1836,24 @@ const PREVIEW_RENDERERS = {
                 ${_boldBar(accent)}
                 ${_boldTitle(t, accent)}
                 <div data-field="items">${rows}</div>
+            </div>`;
+        }
+
+        if (theme === 'editorial_v2') {
+            let ev2Rows = '';
+            items.forEach((item, i) => {
+                const y = 95 + i * 54;
+                const finding = esc(item.finding) || '';
+                const rec = esc(item.recommendation) || '';
+                ev2Rows += `<div style="position:absolute;left:30px;top:${y}px;width:420px;height:42px;background:${EV2.WARM}"><div style="position:absolute;left:0;top:0;width:4px;height:100%;background:${EV2.DK_GREEN}"></div><div style="padding:8px 10px 0 14px;font-size:10px;color:${EV2.CHARCOAL};font-family:${EV2.BF};line-height:1.3">${finding}</div></div>
+                <div style="position:absolute;left:462px;top:${y + 8}px;font-size:16px;font-weight:700;color:${EV2.GOLD};font-family:${EV2.TF}">\u2192</div>
+                <div style="position:absolute;left:500px;top:${y}px;width:470px;height:42px;background:${EV2.COOL}"><div style="position:absolute;left:0;top:0;width:4px;height:100%;background:${EV2.COBALT}"></div><div style="padding:8px 10px 0 14px;font-size:10px;color:${EV2.CHARCOAL};font-family:${EV2.BF};line-height:1.3">${rec}</div></div>`;
+            });
+            return `${_ev2White(t)}
+                <div style="position:absolute;left:48px;top:42px;font-size:9px;font-weight:700;color:${EV2.DK_GREEN};font-family:${EV2.BF};letter-spacing:0.5px">FINDING</div>
+                <div style="position:absolute;left:518px;top:42px;font-size:9px;font-weight:700;color:${EV2.COBALT};font-family:${EV2.BF};letter-spacing:0.5px">RECOMMENDATION</div>
+                <div style="position:absolute;left:30px;top:62px;width:940px;height:1px;background:${EV2.CHARCOAL}"></div>
+                ${ev2Rows}
             </div>`;
         }
 
@@ -1672,6 +1983,31 @@ const PREVIEW_RENDERERS = {
             </div>`;
         }
 
+        if (theme === 'editorial_v2') {
+            const ev2Left = 50;
+            const ev2Top = 80;
+            const ev2CellW = 430;
+            const ev2CellH = 210;
+            const ev2Gap = 14;
+            let ev2Cards = '';
+            questions.forEach((q, i) => {
+                if (i > 3) return;
+                const cc = EV2.ACCENTS[i % 7];
+                const pos = positions[i];
+                const cx = ev2Left + pos.x * (ev2CellW + ev2Gap);
+                const cy = ev2Top + pos.y * (ev2CellH + ev2Gap);
+                const text = esc(q) || _placeholder('Question ' + (i + 1));
+                ev2Cards += `<div style="position:absolute;left:${cx}px;top:${cy}px;width:${ev2CellW}px;height:${ev2CellH}px;background:${EV2.LIGHT_BOX};overflow:hidden">
+                    <div style="position:absolute;left:0;top:0;width:${ev2CellW}px;height:4px;background:${cc}"></div>
+                    <div style="position:absolute;right:10px;top:20px;font-size:80px;font-weight:700;color:${EV2.FAINT};font-family:${EV2.TF};opacity:0.4">?</div>
+                    <div style="position:absolute;left:16px;top:18px;width:${ev2CellW - 60}px;font-size:13px;color:${EV2.CHARCOAL};font-family:${EV2.BF};line-height:1.5">${text}</div>
+                </div>`;
+            });
+            return `${_ev2White(t)}
+                <div data-field="questions">${ev2Cards}</div>
+            </div>`;
+        }
+
         /* slick / editorial */
         const bg = theme.startsWith('editorial') ? '#FAF6F0' : '#fff';
         const gridLeft = 60;
@@ -1773,6 +2109,18 @@ const PREVIEW_RENDERERS = {
                 </div>
                 <div style="position:absolute;left:65px;top:310px;width:880px;height:1px;background:#ddd"></div>
                 <div style="position:absolute;left:65px;top:322px;width:880px">${listHtml}</div>
+            </div>`;
+        }
+
+        if (theme === 'editorial_v2') {
+            return `${_ev2White(t)}
+                <div data-field="takeaways" style="position:absolute;left:60px;top:74px;width:880px;height:220px;background:${EV2.LIGHT_BOX}">
+                    <div style="position:absolute;left:0;top:0;width:4px;height:100%;background:${EV2.ACCENTS[lastIdx % 7]}"></div>
+                    <div style="padding:14px 18px 6px;font-size:15px;font-weight:600;color:${EV2.CHARCOAL};font-family:${EV2.TF}">${currentHeadline}</div>
+                    ${currentDetail ? `<div style="padding:0 18px;font-size:12px;color:${EV2.MID};font-family:${EV2.BF};line-height:1.5">${currentDetail}</div>` : ''}
+                </div>
+                <div style="position:absolute;left:60px;top:310px;width:880px;height:1px;background:${EV2.RULE_CLR}"></div>
+                <div style="position:absolute;left:60px;top:322px;width:880px">${listHtml}</div>
             </div>`;
         }
 
@@ -1889,6 +2237,44 @@ const PREVIEW_RENDERERS = {
             </div>`;
         }
 
+        if (theme === 'editorial_v2') {
+            const ev2LineY = 280;
+            const ev2StartX = 80;
+            const ev2EndX = 940;
+            const ev2Span = ev2EndX - ev2StartX;
+            function ev2StatusColor(status) {
+                if (status === 'complete') return EV2.DK_GREEN;
+                if (status === 'current') return EV2.GOLD;
+                return EV2.FAINT;
+            }
+            let ev2Dots = '';
+            milestones.forEach((m, i) => {
+                const x = ev2StartX + (n === 1 ? ev2Span / 2 : i * ev2Span / (n - 1));
+                const sc2 = ev2StatusColor(m.status);
+                const filled = m.status === 'complete' || m.status === 'current';
+                const above = i % 2 === 0;
+                const dateText = esc(m.date) || '';
+                const mTitle = esc(m.title) || _placeholder('Milestone ' + (i + 1));
+                const detail = esc(m.detail);
+                ev2Dots += `<div style="position:absolute;left:${x - 8}px;top:${ev2LineY - 8}px;width:16px;height:16px;border-radius:50%;background:${filled ? sc2 : '#fff'};border:3px solid ${sc2}"></div>`;
+                if (above) {
+                    ev2Dots += `<div style="position:absolute;left:${x - 60}px;top:${ev2LineY - 65}px;width:120px;text-align:center;font-size:9px;font-weight:700;color:${EV2.QUIET};font-family:${EV2.BF}">${dateText}</div>`;
+                    ev2Dots += `<div style="position:absolute;left:${x - 60}px;top:${ev2LineY - 48}px;width:120px;text-align:center;font-size:11px;font-weight:600;color:${EV2.CHARCOAL};font-family:${EV2.TF}">${mTitle}</div>`;
+                } else {
+                    ev2Dots += `<div style="position:absolute;left:${x - 60}px;top:${ev2LineY + 20}px;width:120px;text-align:center;font-size:11px;font-weight:600;color:${EV2.CHARCOAL};font-family:${EV2.TF}">${mTitle}</div>`;
+                    ev2Dots += `<div style="position:absolute;left:${x - 60}px;top:${ev2LineY + 40}px;width:120px;text-align:center;font-size:9px;font-weight:700;color:${EV2.QUIET};font-family:${EV2.BF}">${dateText}</div>`;
+                }
+                if (detail) {
+                    const detY = above ? ev2LineY - 82 : ev2LineY + 55;
+                    ev2Dots += `<div style="position:absolute;left:${x - 70}px;top:${detY}px;width:140px;text-align:center;font-size:9px;color:${EV2.MID};font-family:${EV2.BF}">${detail}</div>`;
+                }
+            });
+            return `${_ev2White(t)}
+                <div style="position:absolute;left:${ev2StartX}px;top:${ev2LineY}px;width:${ev2Span}px;height:3px;background:${EV2.DK_GREEN}"></div>
+                <div data-field="milestones">${ev2Dots}</div>
+            </div>`;
+        }
+
         /* slick / editorial */
         const bg = theme.startsWith('editorial') ? '#FAF6F0' : '#fff';
         const lineY = 280;
@@ -1977,6 +2363,14 @@ const PREVIEW_RENDERERS = {
                 ${_boldTitle(t, accent)}
                 <div data-field="rows">${table}</div>
                 ${note ? `<div data-field="note" style="position:absolute;left:60px;top:520px;font-size:10px;color:#888">${note}</div>` : ''}
+            </div>`;
+        }
+
+        if (theme === 'editorial_v2') {
+            const ev2Table = buildTable(EV2.DK_GREEN, '#fff', EV2.LIGHT_BOX, EV2.CHARCOAL, EV2.RULE_CLR, EV2.WARM);
+            return `${_ev2White(t)}
+                <div data-field="rows">${ev2Table}</div>
+                ${note ? `<div data-field="note" style="position:absolute;left:60px;top:520px;font-size:10px;color:${EV2.QUIET};font-family:${EV2.BF}">${note}</div>` : ''}
             </div>`;
         }
 
@@ -2076,6 +2470,28 @@ const PREVIEW_RENDERERS = {
             </div>`;
         }
 
+        if (theme === 'editorial_v2') {
+            const ev2CardW = Math.floor((900 - (n - 1) * 16) / n);
+            let ev2Cards = '';
+            stats.forEach((s, i) => {
+                const cc = EV2.ACCENTS[i % 7];
+                const x = 60 + i * (ev2CardW + 16);
+                const val = esc(s.value) || _placeholder('--');
+                const label = esc(s.label) || _placeholder('Metric');
+                const detail = esc(s.detail);
+                ev2Cards += `<div style="position:absolute;left:${x}px;top:90px;width:${ev2CardW}px;height:360px;background:${EV2.LIGHT_BOX};text-align:center">
+                    <div style="position:absolute;left:0;top:0;width:4px;height:100%;background:${cc}"></div>
+                    <div style="padding:55px 12px 8px;font-size:42px;font-weight:700;color:${cc};font-family:${EV2.TF}">${val}</div>
+                    <div style="padding:0 12px 4px;font-size:13px;font-weight:600;color:${EV2.CHARCOAL};font-family:${EV2.BF}">${label}</div>
+                    ${detail ? `<div style="padding:0 12px;font-size:10px;color:${EV2.MID};font-family:${EV2.BF}">${detail}</div>` : ''}
+                </div>`;
+            });
+            return `${_ev2White(t)}
+                <div data-field="stats">${ev2Cards}</div>
+                ${source ? `<div data-field="source" style="position:absolute;left:60px;top:520px;width:900px;text-align:center;font-size:10px;color:${EV2.QUIET};font-family:${EV2.BF}">Source: ${source}</div>` : ''}
+            </div>`;
+        }
+
         /* slick / editorial */
         const bg = theme.startsWith('editorial') ? '#FAF6F0' : '#fff';
         const cardW = Math.floor((900 - (n - 1) * 16) / n);
@@ -2164,6 +2580,30 @@ const PREVIEW_RENDERERS = {
                     ${strategy ? `<div style="padding:4px 24px"><span style="font-size:11px;font-weight:700;color:${accent}">Strategy:</span> <span data-field="strategy" style="font-size:11px;color:#333">${strategy}</span></div>` : ''}
                     ${detail ? `<div data-field="detail" style="padding:4px 24px;font-size:11px;color:#666;line-height:1.5">${detail}</div>` : ''}
                 </div>
+            </div>`;
+        }
+
+        if (theme === 'editorial_v2') {
+            return `${_ev2White(t)}
+                <div style="position:absolute;left:30px;top:50px;width:300px;height:460px;background:${EV2.DK_GREEN}">
+                    <div style="padding:30px 24px 8px">
+                        <div data-field="name" style="font-size:22px;font-weight:700;color:#fff;font-family:${EV2.TF}">${name}</div>
+                        ${archetype ? `<div data-field="archetype" style="margin-top:8px;font-size:11px;font-weight:600;color:${EV2.GOLD};font-family:${EV2.BF};text-transform:uppercase;letter-spacing:0.5px">${archetype}</div>` : ''}
+                    </div>
+                    ${traits.length ? `<div data-field="traits" style="padding:12px 24px 0">${traitPills('rgba(255,255,255,0.15)', EV2.CREAM)}</div>` : ''}
+                </div>
+                <div style="position:absolute;left:350px;top:50px;width:620px;height:260px;background:${EV2.LIGHT_BOX}">
+                    <div style="padding:18px 20px 4px">
+                        <div style="font-size:9px;font-weight:700;color:${EV2.QUIET};font-family:${EV2.BF};text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px">DETAIL</div>
+                        ${detail ? `<div data-field="detail" style="font-size:11px;color:${EV2.CHARCOAL};font-family:${EV2.BF};line-height:1.5">${detail}</div>` : ''}
+                    </div>
+                </div>
+                ${strategy ? `<div style="position:absolute;left:350px;top:324px;width:620px;height:120px;background:${EV2.WARM}">
+                    <div style="padding:14px 20px">
+                        <div style="font-size:9px;font-weight:700;color:${EV2.DK_GREEN};font-family:${EV2.BF};text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px">STRATEGY</div>
+                        <div data-field="strategy" style="font-size:11px;color:${EV2.CHARCOAL};font-family:${EV2.BF};line-height:1.5">${strategy}</div>
+                    </div>
+                </div>` : ''}
             </div>`;
         }
 
@@ -2305,6 +2745,39 @@ const PREVIEW_RENDERERS = {
             </div>`;
         }
 
+        if (theme === 'editorial_v2') {
+            let ev2RiskHtml = '';
+            risks.forEach((r, i) => {
+                const label = esc(r.label) || _placeholder('Risk ' + (i + 1));
+                const detail = esc(r.detail);
+                ev2RiskHtml += `<div style="padding:8px 14px;border-bottom:1px solid ${EV2.RULE_CLR}">
+                    <div style="font-size:12px;font-weight:600;color:#C23B22;font-family:${EV2.BF}">${label} ${severityBadge(r.severity)}</div>
+                    ${detail ? `<div style="font-size:10px;color:${EV2.MID};font-family:${EV2.BF};margin-top:2px">${detail}</div>` : ''}
+                </div>`;
+            });
+            let ev2RewardHtml = '';
+            rewards.forEach((r, i) => {
+                const label = esc(r.label) || _placeholder('Reward ' + (i + 1));
+                const detail = esc(r.detail);
+                ev2RewardHtml += `<div style="padding:8px 14px;border-bottom:1px solid ${EV2.RULE_CLR}">
+                    <div style="font-size:12px;font-weight:600;color:${EV2.DK_GREEN};font-family:${EV2.BF}">${label}</div>
+                    ${detail ? `<div style="font-size:10px;color:${EV2.MID};font-family:${EV2.BF};margin-top:2px">${detail}</div>` : ''}
+                </div>`;
+            });
+            return `${_ev2White(t)}
+                <div data-field="risks" style="position:absolute;left:30px;top:80px;width:450px;height:430px;background:${EV2.LIGHT_BOX}">
+                    <div style="position:absolute;left:0;top:0;width:4px;height:100%;background:#C23B22"></div>
+                    <div style="padding:10px 14px 0 18px;font-size:13px;font-weight:700;color:#C23B22;font-family:${EV2.TF};border-bottom:2px solid ${EV2.RULE_CLR}">Risks</div>
+                    ${ev2RiskHtml}
+                </div>
+                <div data-field="rewards" style="position:absolute;left:500px;top:80px;width:470px;height:430px;background:${EV2.LIGHT_BOX}">
+                    <div style="position:absolute;left:0;top:0;width:4px;height:100%;background:${EV2.DK_GREEN}"></div>
+                    <div style="padding:10px 14px 0 18px;font-size:13px;font-weight:700;color:${EV2.DK_GREEN};font-family:${EV2.TF};border-bottom:2px solid ${EV2.RULE_CLR}">Rewards</div>
+                    ${ev2RewardHtml}
+                </div>
+            </div>`;
+        }
+
         /* slick / editorial */
         const bg = theme.startsWith('editorial') ? '#FAF6F0' : '#fff';
         let riskHtml = '';
@@ -2414,6 +2887,26 @@ const PREVIEW_RENDERERS = {
             </div>`;
         }
 
+        if (theme === 'editorial_v2') {
+            let ev2Rows = '';
+            const ev2StartY = 80;
+            const ev2RowH = 56;
+            sections.forEach((s, i) => {
+                const y = ev2StartY + i * (ev2RowH + 10);
+                const label = esc(s.label) || _placeholder('Section ' + (i + 1));
+                const content = esc(s.content);
+                ev2Rows += `<div style="position:absolute;left:60px;top:${y}px;width:900px;min-height:${ev2RowH}px;display:flex">
+                    <div style="width:160px;padding:8px 14px 2px 0;font-size:11px;font-weight:700;color:${EV2.QUIET};font-family:${EV2.BF};text-transform:uppercase;letter-spacing:0.3px">${label}</div>
+                    <div style="flex:1;padding:8px 14px 2px;border-left:1px solid ${EV2.RULE_CLR}">
+                        ${content ? `<div style="font-size:11px;color:${EV2.CHARCOAL};font-family:${EV2.BF};line-height:1.4">${content}</div>` : ''}
+                    </div>
+                </div>`;
+            });
+            return `${_ev2White(t)}
+                <div data-field="sections">${ev2Rows}</div>
+            </div>`;
+        }
+
         /* slick / editorial */
         const bg = theme.startsWith('editorial') ? '#FAF6F0' : '#fff';
         let rows = '';
@@ -2510,6 +3003,25 @@ const PREVIEW_RENDERERS = {
                     <div style="height:5px;background:#368727;border-radius:8px 8px 0 0"></div>
                     <div style="padding:14px 16px 6px;font-size:14px;font-weight:800;color:#368727">${aLabel}</div>
                     ${aDetail ? `<div style="padding:0 16px;font-size:11px;color:#444;line-height:1.5">${aDetail}</div>` : ''}
+                </div>
+            </div>`;
+        }
+
+        if (theme === 'editorial_v2') {
+            return `${_ev2White(t)}
+                <div data-field="before" style="position:absolute;left:30px;top:80px;width:290px;height:420px;background:${EV2.WARM}">
+                    <div style="position:absolute;left:0;top:0;width:4px;height:100%;background:#C23B22"></div>
+                    <div style="padding:14px 16px 6px 18px;font-size:14px;font-weight:700;color:#C23B22;font-family:${EV2.TF}">${bLabel}</div>
+                    ${bDetail ? `<div style="padding:0 16px 0 18px;font-size:11px;color:${EV2.CHARCOAL};font-family:${EV2.BF};line-height:1.5">${bDetail}</div>` : ''}
+                </div>
+                <div style="position:absolute;left:335px;top:80px;width:280px;height:420px;background:${EV2.LIGHT_BOX};text-align:center">
+                    <div style="padding:150px 16px 8px;font-size:36px;font-weight:700;color:${EV2.GOLD};font-family:${EV2.TF}">\u2192</div>
+                    ${intervention ? `<div data-field="intervention" style="padding:0 16px;font-size:13px;font-weight:600;color:${EV2.CHARCOAL};font-family:${EV2.BF}">${intervention}</div>` : ''}
+                </div>
+                <div data-field="after" style="position:absolute;left:630px;top:80px;width:340px;height:420px;background:${EV2.COOL}">
+                    <div style="position:absolute;left:0;top:0;width:4px;height:100%;background:${EV2.DK_GREEN}"></div>
+                    <div style="padding:14px 16px 6px 18px;font-size:14px;font-weight:700;color:${EV2.DK_GREEN};font-family:${EV2.TF}">${aLabel}</div>
+                    ${aDetail ? `<div style="padding:0 16px 0 18px;font-size:11px;color:${EV2.CHARCOAL};font-family:${EV2.BF};line-height:1.5">${aDetail}</div>` : ''}
                 </div>
             </div>`;
         }
@@ -3875,6 +4387,64 @@ const PREVIEW_RENDERERS = {
             ${_slickBar(accent)}
             ${_slickTitle(t, accent, theme)}
             <div data-field="items">${rows}</div>
+        </div>`;
+    },
+
+    comparison_reveal(d, theme, sc) {
+        if (theme !== 'editorial_v2') return PREVIEW_RENDERERS.comparison(d, theme, sc);
+        const t = esc(d.title || 'Comparison');
+        const ll = esc(d.leftLabel || 'Option A');
+        const rl = esc(d.rightLabel || 'Option B');
+        const leftItems = d.leftItems || [];
+        const rightItems = d.rightItems || [];
+        let leftCards = '', rightCards = '';
+        leftItems.slice(0, 4).forEach((item, i) => {
+            const y = 110 + i * 75;
+            const text = esc(typeof item === 'string' ? item : (item.text || ''));
+            leftCards += `<div style="position:absolute;left:30px;top:${y}px;width:540px;height:65px;background:${EV2.WARM}"><div style="position:absolute;left:0;top:0;width:6px;height:100%;background:${EV2.GOLD}"></div><div style="padding:12px 12px 0 20px;font-size:12px;color:${EV2.CHARCOAL};font-family:${EV2.BF};line-height:1.4">${text}</div></div>`;
+        });
+        rightItems.slice(0, 4).forEach((item, i) => {
+            const y = 110 + i * 75;
+            const text = esc(typeof item === 'string' ? item : (item.text || ''));
+            rightCards += `<div style="position:absolute;left:600px;top:${y}px;width:365px;height:30px;background:${EV2.LIGHT_BOX}"><div style="position:absolute;left:0;top:0;width:3px;height:100%;background:${EV2.FAINT}"></div><div style="padding:6px 10px 0 14px;font-size:9px;color:${EV2.QUIET};font-family:${EV2.BF}">${text}</div></div>`;
+        });
+        return `${_ev2White(t)}
+            <div style="position:absolute;left:50px;top:42px;font-size:18px;font-weight:700;color:${EV2.DK_GREEN};font-family:${EV2.TF}">${ll}</div>
+            <div style="position:absolute;left:50px;top:72px;width:180px;height:2px;background:${EV2.GOLD}"></div>
+            <div style="position:absolute;left:600px;top:46px;font-size:11px;font-weight:700;color:${EV2.QUIET};font-family:${EV2.BF}">${rl}</div>
+            <div style="position:absolute;left:600px;top:66px;width:100px;height:1px;background:${EV2.RULE_CLR}"></div>
+            <div style="position:absolute;left:588px;top:42px;width:1px;height:400px;background:${EV2.RULE_CLR}"></div>
+            ${leftCards}${rightCards}
+        </div>`;
+    },
+
+    process_flow_accordion(d, theme, sc) {
+        if (theme !== 'editorial_v2') return PREVIEW_RENDERERS.process_flow(d, theme, sc);
+        const t = esc(d.title || 'Process');
+        const steps = d.steps || [];
+        const n = Math.min(steps.length || 1, 6);
+        const cardH = Math.min(65, Math.floor(340 / n));
+        let cards = '';
+        steps.slice(0, n).forEach((step, i) => {
+            const color = EV2.ACCENTS[i % 7];
+            const isLeft = i % 2 === 0;
+            const y = 85 + i * (cardH + 8);
+            const x = isLeft ? 80 : 530;
+            const bg = isLeft ? EV2.WARM : EV2.COOL;
+            const lbl = esc(step.label || step.title) || '';
+            const det = esc(step.detail || '');
+            cards += `<div style="position:absolute;left:${x}px;top:${y}px;width:380px;height:${cardH}px;background:${bg}">
+                <div style="position:absolute;left:0;top:0;width:5px;height:100%;background:${color}"></div>
+                <div style="padding:8px 10px 0 16px;font-size:11px;font-weight:700;color:${EV2.CHARCOAL};font-family:${EV2.TF}">${lbl}</div>
+                ${det ? `<div style="padding:2px 10px 0 16px;font-size:9px;color:${EV2.MID};font-family:${EV2.BF}">${det}</div>` : ''}
+            </div>`;
+            cards += `<div style="position:absolute;left:492px;top:${y + cardH / 2 - 12}px;width:24px;height:24px;border-radius:50%;background:${color};color:#fff;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;font-family:${EV2.BF}">${i + 1}</div>`;
+        });
+        return `<div class="preview-slide theme-editorial_v2" style="background:#fff">
+            ${_ev2TopRule(false)}
+            <div style="position:absolute;left:50px;top:18px;font-size:20px;font-weight:700;color:${EV2.CHARCOAL};font-family:${EV2.TF}">${t}</div>
+            <div style="position:absolute;left:504px;top:80px;width:2px;height:${n * (cardH + 8)}px;background:${EV2.FAINT}"></div>
+            ${cards}
         </div>`;
     },
 };
