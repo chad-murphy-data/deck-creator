@@ -3,6 +3,7 @@ __pycache__/
 *.pptx
 !gg_editorial_v2.pptx
 !gg_editorial_v2_final.pptx
+!psych_diversification_boss_deck_v2.pptx
 output/*.pptx
 projects/*.json
 .claude/
